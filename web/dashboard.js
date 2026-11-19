@@ -783,7 +783,7 @@
       '</div>' +
       '<div class="kpi">' +
         '<div class="kpi-label">Favorabilidad</div>' +
-        '<div class="kpi-value ' + lv.tag + '">' + fmtPct(avg) + '</div>' +
+        '<div class="kpi-value">' + fmtPct(avg) + '</div>' +
         '<div class="kpi-sub"><span class="badge ' + lv.cls + '">' + lv.text + '</span></div>' +
       '</div>' +
       '<div class="kpi">' +
