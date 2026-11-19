@@ -85,13 +85,29 @@
       resources = String(resources || '').split(';').map(function (s) { return s.trim(); }).filter(Boolean);
     }
 
+    var tId = String(r.teacherId != null ? r.teacherId : '');
+    var tName = (r.teacherName || '').trim();
+
+    // Reconciliar con state.config.teachers si el ID no coincide directamente (ej. si en la hoja se guardó un número o id alterno)
+    if (state.config && state.config.teachers) {
+      var found = state.config.teachers.filter(function (t) { return t.id === tId; })[0];
+      if (!found && tName) {
+        var foundByName = state.config.teachers.filter(function (t) {
+          return t.name.toLowerCase().trim() === tName.toLowerCase();
+        })[0];
+        if (foundByName) {
+          tId = foundByName.id;
+        }
+      }
+    }
+
     return {
       timestamp: r.timestamp,
       period: r.period,
       grade: r.grade,
       gradeId: r.gradeId != null ? String(r.gradeId) : '',
       course: r.course,
-      teacherId: String(r.teacherId != null ? r.teacherId : ''),
+      teacherId: tId,
       teacherName: r.teacherName,
       area: r.area,
       subject: r.subject,
@@ -619,7 +635,9 @@
 
     tbody.innerHTML = s.byTeacher.map(function (t) {
       var lv = level(t.avg, t.n);
-      var teacher = (state.config.teachers || []).filter(function (x) { return x.id === t.id; })[0];
+      var teacher = (state.config.teachers || []).filter(function (x) {
+        return x.id === t.id || (t.name && x.name.toLowerCase().trim() === t.name.toLowerCase().trim());
+      })[0];
       var subjects = teacher && teacher.assignments
         ? Array.from(new Set(teacher.assignments.map(function (a) { return a.subject; }).filter(Boolean))).slice(0, 2).join(', ')
         : '';
@@ -651,15 +669,23 @@
   /* ---------------- Modal de Detalle por Docente ---------------- */
   function openTeacherDetail(teacherId) {
     state.currentDetailTeacherId = teacherId;
-    var teacher = (state.config.teachers || []).filter(function (t) { return t.id === teacherId; })[0];
-    var teacherRows = state.filtered.filter(function (r) { return r.teacherId === teacherId; });
+    var teacher = (state.config.teachers || []).filter(function (t) {
+      return t.id === teacherId || (t.name && t.name.toLowerCase().trim() === String(teacherId).toLowerCase().trim());
+    })[0];
+    var realId = (teacher && teacher.id) || teacherId;
+
+    var teacherRows = state.filtered.filter(function (r) {
+      return r.teacherId === teacherId || r.teacherId === realId || (teacher && r.teacherName === teacher.name);
+    });
 
     if (!teacherRows.length) {
-      teacherRows = state.rows.filter(function (r) { return r.teacherId === teacherId; });
+      teacherRows = state.rows.filter(function (r) {
+        return r.teacherId === teacherId || r.teacherId === realId || (teacher && r.teacherName === teacher.name);
+      });
     }
 
     var name = (teacher && teacher.name) || (teacherRows[0] && teacherRows[0].teacherName) || 'Docente';
-    var tObj = teacher || { name: name, photo: '' };
+    var tObj = teacher || (teacherRows[0] ? (state.config.teachers || []).filter(function (x) { return x.name === teacherRows[0].teacherName; })[0] : null) || { name: name, photo: '' };
 
     var subjects = teacher && teacher.assignments
       ? Array.from(new Set(teacher.assignments.map(function (a) { return a.subject; }).filter(Boolean))).join(', ')
