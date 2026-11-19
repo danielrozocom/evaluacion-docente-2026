@@ -1,0 +1,272 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Evaluación Docente 2026 | Colegio Interamericano</title>
+<meta name="description" content="Evaluación docente de bachillerato. Tu opinión ayuda a mejorar las clases." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <img class="brand-logo" src="assets/logo.svg" alt="Colegio Interamericano" />
+        <div class="brand-text">
+          <div class="brand-title">Colegio Interamericano</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span class="badge badge-primary" id="periodBadge">
+          <i data-lucide="calendar-days"></i><span>Periodo 2026</span>
+        </span>
+        <button class="btn btn-outline btn-sm hidden" id="btnDash" type="button">
+          <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="container">
+
+      <!-- ============ PANTALLA 1: BIENVENIDA / DATOS ============ -->
+      <section id="screen-welcome">
+        <div class="hero">
+          <div class="hero-content">
+            <h1>Tu voz mejora nuestras clases</h1>
+            <p>Selecciona tu grado, evalúa a cada uno de tus docentes y ayúdanos a construir mejores experiencias de aprendizaje. Cada docente se evalúa una sola vez.</p>
+          </div>
+        </div>
+
+        <div class="card mt-6" style="max-width: 720px; margin-left: auto; margin-right: auto;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Selecciona tu grado</div>
+              <div class="card-description">Verás los docentes que dictan clase en ese grado.</div>
+            </div>
+            <div class="dimension-icon"><i data-lucide="school"></i></div>
+          </div>
+          <form id="formStudent" class="card-body stack" novalidate>
+            <div class="form-grid">
+              <div class="field span-2" id="fieldGrade">
+                <label class="label" for="selGrade">Grado <span class="req">*</span></label>
+                <select class="select" id="selGrade" name="grade">
+                  <option value="">Selecciona tu grado</option>
+                </select>
+                <span class="error-text">Selecciona tu grado.</span>
+              </div>
+              <div class="field span-2">
+                <div class="alert alert-info">
+                  <i data-lucide="info"></i>
+                  <div>
+                    <div class="small">Verás únicamente los docentes que dictan clase en el grado que selecciones.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="field span-2">
+                <div class="alert alert-warning">
+                  <i data-lucide="triangle-alert"></i>
+                  <div class="small">Completa toda la encuesta en esta sesión. Al finalizar, el dispositivo quedará listo para otro estudiante.</div>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-lg btn-block" type="submit" id="btnStart">
+              <span>Comenzar evaluación</span><i data-lucide="arrow-right"></i>
+            </button>
+            <p class="hint text-center">No pedimos tu nombre ni documento. Tu evaluación es anónima.</p>
+          </form>
+        </div>
+      </section>
+
+      <!-- ============ PANTALLA 2: DOCENTES DEL GRADO ============ -->
+      <section id="screen-teachers" hidden>
+        <div class="stepper">
+          <span class="step is-done"><span class="step-dot"><i data-lucide="check"></i></span><span class="step-label">Datos</span></span>
+          <span class="step-sep"></span>
+          <span class="step is-active"><span class="step-dot">2</span><span class="step-label">Docentes</span></span>
+          <span class="step-sep"></span>
+          <span class="step"><span class="step-dot">3</span><span class="step-label">Evaluación</span></span>
+        </div>
+
+        <div class="row-between mb-4">
+          <div>
+            <div class="eyebrow" id="teacherEyebrow">Docentes de 10°</div>
+            <h2 id="teacherTitle" style="font-size: 25px; margin-top: 2px;">Elige un docente para evaluar</h2>
+          </div>
+          <div class="row">
+            <button class="btn btn-ghost btn-sm" id="btnFinishSession" type="button">
+              <i data-lucide="log-out"></i><span>Finalizar encuesta</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card card-pad mb-6">
+          <div class="row-between mb-4">
+            <span class="badge badge-primary" id="progressBadge">
+              <i data-lucide="clipboard-check"></i><span>0 de 0 evaluados</span>
+            </span>
+            <span class="badge badge-outline" id="gradeBadge">
+              <i data-lucide="school"></i><span>—</span>
+            </span>
+          </div>
+          <div class="progress"><div class="progress-bar" id="progressBar" style="width: 0%"></div></div>
+          <div class="progress-meta mt-2">
+            <span id="progressText">Aún no has evaluado ningún docente.</span>
+            <span id="progressPct">0%</span>
+          </div>
+        </div>
+
+        <div class="teacher-grid" id="teacherGrid"></div>
+
+        <div class="mt-6" id="teachersFooter" hidden>
+          <div class="alert alert-success">
+            <i data-lucide="party-popper"></i>
+            <div>
+              <div class="alert-title">¡Terminaste!</div>
+              <div class="small">Ya evaluaste a todos los docentes de tu grado. Gracias por participar.</div>
+            </div>
+          </div>
+          <button class="btn btn-block mt-4" id="btnFinish" type="button">
+            <i data-lucide="flag"></i><span>Ver resumen final</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ============ PANTALLA 3: CUESTIONARIO ============ -->
+      <section id="screen-eval" hidden>
+        <div class="stepper">
+          <span class="step is-done"><span class="step-dot"><i data-lucide="check"></i></span><span class="step-label">Datos</span></span>
+          <span class="step-sep"></span>
+          <span class="step is-done"><span class="step-dot"><i data-lucide="check"></i></span><span class="step-label">Docentes</span></span>
+          <span class="step-sep"></span>
+          <span class="step is-active"><span class="step-dot">3</span><span class="step-label">Evaluación</span></span>
+        </div>
+
+        <button class="btn btn-ghost btn-sm mb-4" id="btnBackTeachers" type="button" style="margin-left: -8px;">
+          <i data-lucide="arrow-left"></i><span>Volver a docentes</span>
+        </button>
+
+        <div class="card card-pad mb-6">
+          <div class="row" style="gap: 14px; align-items: center;">
+            <span class="avatar lg" id="evalAvatar">—</span>
+            <div style="flex: 1; min-width: 0;">
+              <div class="eyebrow">Evaluando a</div>
+              <h2 id="evalName" style="font-size: 22px; margin-top: 2px;">—</h2>
+            </div>
+          </div>
+        </div>
+
+        <form id="formEval" class="questionnaire" novalidate>
+          <div id="questionsContainer"></div>
+
+          <div class="card" id="commentCard">
+            <div class="dimension-head">
+              <div class="dimension-icon"><i data-lucide="message-square-text"></i></div>
+              <div>
+                <div class="dimension-title">Comentario (opcional)</div>
+                <div class="dimension-desc">Si quieres, cuéntanos algo que ayude a este docente a mejorar.</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <textarea class="textarea" id="txtComment" maxlength="600" placeholder="Escribe un comentario breve (máximo 600 caracteres)…"></textarea>
+              <div class="row-between mt-2">
+                <span class="hint"></span>
+                <span class="hint" id="commentCount">0 / 600</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card card-pad mt-4">
+            <div class="row-between">
+              <div class="small muted" id="answeredHint">0 de 10 preguntas respondidas</div>
+              <button class="btn btn-lg" type="submit" id="btnSubmit">
+                <i data-lucide="send"></i><span>Enviar evaluación</span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- ============ PANTALLA 4: RESUMEN ============ -->
+      <section id="screen-done" hidden>
+        <div class="state">
+          <div class="state-icon"><i data-lucide="check-check"></i></div>
+          <div>
+            <h2 id="doneTitle">¡Gracias por tu evaluación!</h2>
+            <p class="lead mt-2" id="doneText">Tus respuestas se registraron correctamente.</p>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="stat-label">Evaluados</div>
+              <div class="stat-value" id="doneEvaluated">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Pendientes</div>
+              <div class="stat-value" id="donePending">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Avance</div>
+              <div class="stat-value" id="donePct">0<small>%</small></div>
+            </div>
+          </div>
+
+          <div class="progress w-full"><div class="progress-bar" id="doneBar" style="width: 0%"></div></div>
+
+          <div class="w-full stack-sm" id="pendingList"></div>
+
+          <div class="row" style="justify-content: center;">
+            <button class="btn btn-outline" id="btnDoneBack" type="button">
+              <i data-lucide="users"></i><span>Volver a mis docentes</span>
+            </button>
+            <button class="btn hidden" id="btnDoneNext" type="button">
+              <span>Evaluar siguiente</span><i data-lucide="arrow-right"></i>
+            </button>
+            <button class="btn" id="btnFinishSessionDone" type="button">
+              <i data-lucide="log-out"></i><span>Finalizar encuesta</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>© <span id="footerYear">2026</span> Colegio Interamericano · Evaluación Docente</span>
+      
+    </div>
+  </footer>
+</div>
+
+<div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+<div class="modal-backdrop" id="appModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-icon" id="modalIcon"><i data-lucide="triangle-alert"></i></div>
+    <h3 class="modal-title" id="modalTitle">Confirmar</h3>
+    <p class="modal-text" id="modalText"></p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" type="button" id="modalCancel">Cancelar</button>
+      <button class="btn" type="button" id="modalOk">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
+
+
+
+
