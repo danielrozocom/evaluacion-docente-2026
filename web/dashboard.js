@@ -687,9 +687,6 @@
       var teacher = (state.config.teachers || []).filter(function (x) {
         return x.id === t.id || (t.name && x.name.toLowerCase().trim() === t.name.toLowerCase().trim());
       })[0];
-      var subjects = teacher && teacher.assignments
-        ? Array.from(new Set(teacher.assignments.map(function (a) { return a.subject; }).filter(Boolean))).slice(0, 2).join(', ')
-        : '';
 
       return '<tr class="is-clickable" data-teacher-id="' + esc(t.id) + '" title="Clic para ver detalle de ' + esc(t.name) + '">' +
         '<td data-label="Docente">' +
@@ -697,7 +694,6 @@
             avatarHTML(teacher || { name: t.name, photo: '' }) +
             '<div class="teacher-info">' +
               '<div class="cell-strong">' + esc(t.name) + '</div>' +
-              (subjects ? '<div class="small muted teacher-sub">' + esc(subjects) + '</div>' : '') +
             '</div>' +
           '</div>' +
         '</td>' +
