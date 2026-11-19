@@ -1286,8 +1286,18 @@ svg {
 
 /* ---------- Modal ---------- */
 .modal-backdrop {
-  position: fixed; inset: 0; z-index: 95; padding: 24px 20px;
-  display: grid; place-items: center;
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  padding: 20px;
+  display: grid;
+  place-items: center;
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  padding: 24px 20px;
+  display: grid;
+  place-items: center;
   background: rgba(20, 24, 38, 0.55);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
@@ -1310,6 +1320,9 @@ svg {
 }
 
 .modal-lg {
+  width: min(860px, calc(100vw - 32px));
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
   width: min(840px, calc(100vw - 32px));
   max-height: calc(100vh - 48px);
   max-height: calc(100dvh - 48px);
@@ -1317,15 +1330,18 @@ svg {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 20px;
   padding: 24px 22px;
   border-radius: 20px;
   margin: auto;
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
 }
+
 .modal-lg .card-pad {
   padding: 18px 20px;
   border-radius: 14px;
 }
+
 .modal-lg .modal-actions {
   margin-top: 10px;
   padding-top: 14px;
@@ -1334,6 +1350,7 @@ svg {
 
 .modal-header-custom {
   display: flex;
+  align-items: flex-start;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
@@ -2117,6 +2134,7 @@ table.data tbody tr.is-clickable:hover {
   color: var(--destructive);
 }
 
+/* Modal Bottom Sheet en Móvil */
 /* Modal en Móvil: con márgenes laterales y respiro visual */
 @media (max-width: 639px) {
   .modal-backdrop:not([hidden]) {
@@ -2132,6 +2150,12 @@ table.data tbody tr.is-clickable:hover {
 
   .modal-lg {
     width: 100% !important;
+    max-width: 100% !important;
+    height: 94vh !important;
+    height: 94dvh !important;
+    max-height: 94dvh !important;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 16px 14px calc(24px + env(safe-area-inset-bottom, 0)) !important;
     max-width: min(580px, calc(100vw - 24px)) !important;
     height: auto !important;
     max-height: calc(100dvh - 32px) !important;
@@ -2142,411 +2166,432 @@ table.data tbody tr.is-clickable:hover {
     box-shadow: 0 20px 48px rgba(15, 23, 42, 0.3) !important;
     animation: modal-in 180ms ease !important;
   }
+
   .modal-header-custom {
     position: static !important;
     margin: 0 !important;
+    animation: sheet-up 220ms cubic-bezier(0.16, 1, 0.3, 1) !important;
     padding: 0 0 14px 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     border-bottom: 1px solid var(--border) !important;
   }
 
-  .modal-lg .card-pad {
-    padding: 14px 14px !important;
-    border-radius: 12px !important;
-    margin: 2px 0 !important;
-  }
+  @keyframes sheet-up {
+    from {
+      transform: translateY(100%);
+    }
 
-  .modal-lg .modal-actions {
-    margin-top: 10px !important;
-    padding-top: 14px !important;
-  }
+    to {
+      transform: translateY(0);
+    }
 
-  #modalTeacherKpis {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 8px !important;
-  }
+    .modal-lg .card-pad {
+      padding: 14px 14px !important;
+      border-radius: 12px !important;
+      margin: 2px 0 !important;
+    }
 
-  #modalTeacherKpis .kpi {
-    padding: 10px 12px !important;
-  }
+    .modal-header-custom {
+      position: sticky !important;
+      top: -16px !important;
+      background: var(--card) !important;
+      z-index: 20 !important;
+      margin: -16px -14px 0 -14px !important;
+      padding: 14px 14px 12px 14px !important;
+      border-radius: 20px 20px 0 0 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
 
-  #modalTeacherKpis .kpi-value {
-    font-size: 19px !important;
-  }
+      .modal-lg .modal-actions {
+        margin-top: 10px !important;
+        padding-top: 14px !important;
+      }
 
-  #modalTeacherBreakdown {
-    grid-template-columns: 1fr !important;
-  }
-}
+      #modalTeacherKpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+      }
 
-.gate {
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: radial-gradient(1000px 500px at 50% -10%, #e7ecf9, transparent 65%), var(--background);
-}
+      #modalTeacherKpis .kpi {
+        padding: 10px 12px !important;
+      }
 
-.gate-card {
-  width: min(420px, 100%);
-  padding: 24px;
-}
+      #modalTeacherKpis .kpi-value {
+        font-size: 19px !important;
+      }
 
-.gate-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 14px;
-  background: var(--primary);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  margin-bottom: 16px;
-  box-shadow: 0 10px 24px -10px rgba(54, 75, 135, 0.8);
-}
+      #modalTeacherBreakdown {
+        grid-template-columns: 1fr !important;
+      }
+    }
 
-.gate-icon svg {
-  width: 23px;
-  height: 23px;
-}
+    .gate {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: radial-gradient(1000px 500px at 50% -10%, #e7ecf9, transparent 65%), var(--background);
+    }
 
-.empty {
-  padding: 30px 16px;
-  text-align: center;
-  color: var(--muted-foreground);
-  font-size: 13px;
-}
+    .gate-card {
+      width: min(420px, 100%);
+      padding: 24px;
+    }
 
-/* ---------- Impresión (dashboard) ---------- */
-@media print {
+    .gate-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 24px -10px rgba(54, 75, 135, 0.8);
+    }
 
-  .topbar,
-  .topbar-actions,
-  .footer,
-  .filters,
-  #btnCsv,
-  #btnRefresh,
-  #btnPrint,
-  #btnLogout,
-  .toast-wrap {
-    display: none !important;
-  }
+    .gate-icon svg {
+      width: 23px;
+      height: 23px;
+    }
 
-  body {
-    background: #fff;
-    font-size: 11pt;
-  }
+    .empty {
+      padding: 30px 16px;
+      text-align: center;
+      color: var(--muted-foreground);
+      font-size: 13px;
+    }
 
-  .page {
-    padding: 0;
-  }
+    /* ---------- Impresión (dashboard) ---------- */
+    @media print {
 
-  .card {
-    break-inside: avoid;
-    box-shadow: none;
-  }
+      .topbar,
+      .topbar-actions,
+      .footer,
+      .filters,
+      #btnCsv,
+      #btnRefresh,
+      #btnPrint,
+      #btnLogout,
+      .toast-wrap {
+        display: none !important;
+      }
 
-  .chart-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
+      body {
+        background: #fff;
+        font-size: 11pt;
+      }
 
-/* ============================================================
+      .page {
+        padding: 0;
+      }
+
+      .card {
+        break-inside: avoid;
+        box-shadow: none;
+      }
+
+      .chart-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* ============================================================
    Mejoras progresivas (mobile first)
    ============================================================ */
-@media (min-width: 420px) {
-  .scale {
-    gap: 7px;
-  }
+    @media (min-width: 420px) {
+      .scale {
+        gap: 7px;
+      }
 
-  .scale-label {
-    min-height: 58px;
-  }
+      .scale-label {
+        min-height: 58px;
+      }
 
-  .scale-label .txt {
-    font-size: 10px;
-  }
+      .scale-label .txt {
+        font-size: 10px;
+      }
 
-  .stat {
-    padding: 14px;
-  }
+      .stat {
+        padding: 14px;
+      }
 
-  .stat-value {
-    font-size: 22px;
-  }
+      .stat-value {
+        font-size: 22px;
+      }
 
-  .kpi {
-    padding: 16px;
-  }
+      .kpi {
+        padding: 16px;
+      }
 
-  .kpi-value {
-    font-size: 26px;
-  }
-}
+      .kpi-value {
+        font-size: 26px;
+      }
+    }
 
-@media (min-width: 640px) {
-  .container {
-    padding: 0 20px;
-  }
+    @media (min-width: 640px) {
+      .container {
+        padding: 0 20px;
+      }
 
-  body {
-    font-size: 15.5px;
-  }
+      body {
+        font-size: 15.5px;
+      }
 
-  .topbar-inner {
-    height: 64px;
-  }
+      .topbar-inner {
+        height: 64px;
+      }
 
-  .brand-logo {
-    width: 42px;
-    height: 42px;
-  }
+      .brand-logo {
+        width: 42px;
+        height: 42px;
+      }
 
-  .brand-mark {
-    width: 38px;
-    height: 38px;
-    border-radius: 11px;
-  }
+      .brand-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+      }
 
-  .brand-title {
-    font-size: 15px;
-  }
+      .brand-title {
+        font-size: 15px;
+      }
 
-  .brand-sub {
-    display: block;
-  }
+      .brand-sub {
+        display: block;
+      }
 
-  .topbar-actions .btn {
-    width: auto;
-    height: 34px;
-    min-height: 34px;
-    padding: 0 12px;
-  }
+      .topbar-actions .btn {
+        width: auto;
+        height: 34px;
+        min-height: 34px;
+        padding: 0 12px;
+      }
 
-  .topbar-actions .btn span {
-    display: inline;
-  }
+      .topbar-actions .btn span {
+        display: inline;
+      }
 
-  .topbar-actions .badge {
-    display: inline-flex;
-  }
+      .topbar-actions .badge {
+        display: inline-flex;
+      }
 
-  .page {
-    padding: 28px 0 56px;
-  }
+      .page {
+        padding: 28px 0 56px;
+      }
 
-  .footer-inner {
-    flex-direction: row;
-    justify-content: space-between;
-  }
+      .footer-inner {
+        flex-direction: row;
+        justify-content: space-between;
+      }
 
-  .hero {
-    padding: 32px;
-    border-radius: var(--radius-lg);
-  }
+      .hero {
+        padding: 32px;
+        border-radius: var(--radius-lg);
+      }
 
-  .hero p {
-    font-size: 15.5px;
-  }
+      .hero p {
+        font-size: 15.5px;
+      }
 
-  .card-pad {
-    padding: 22px;
-  }
+      .card-pad {
+        padding: 22px;
+      }
 
-  .card-header {
-    padding: 18px 22px;
-  }
+      .card-header {
+        padding: 18px 22px;
+      }
 
-  .card-body {
-    padding: 22px;
-  }
+      .card-body {
+        padding: 22px;
+      }
 
-  .card-footer {
-    padding: 16px 22px;
-  }
+      .card-footer {
+        padding: 16px 22px;
+      }
 
-  .form-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
 
-  .form-grid .span-2 {
-    grid-column: span 2;
-  }
+      .form-grid .span-2 {
+        grid-column: span 2;
+      }
 
-  .input,
-  .select {
-    font-size: 15px;
-  }
+      .input,
+      .select {
+        font-size: 15px;
+      }
 
-  .textarea {
-    font-size: 15px;
-  }
+      .textarea {
+        font-size: 15px;
+      }
 
-  .teacher-grid {
-    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-    gap: 14px;
-  }
+      .teacher-grid {
+        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+        gap: 14px;
+      }
 
-  .teacher-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
-  }
+      .teacher-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+      }
 
-  .stepper {
-    gap: 8px;
-  }
+      .stepper {
+        gap: 8px;
+      }
 
-  .step-label {
-    display: inline;
-  }
+      .step-label {
+        display: inline;
+      }
 
-  .step-sep {
-    width: 22px;
-  }
+      .step-sep {
+        width: 22px;
+      }
 
-  .state h2 {
-    font-size: 25px;
-  }
+      .state h2 {
+        font-size: 25px;
+      }
 
-  .state-icon {
-    width: 78px;
-    height: 78px;
-  }
+      .state-icon {
+        width: 78px;
+        height: 78px;
+      }
 
-  .state-icon svg {
-    width: 38px;
-    height: 38px;
-  }
+      .state-icon svg {
+        width: 38px;
+        height: 38px;
+      }
 
-  .stat-value {
-    font-size: 24px;
-  }
+      .stat-value {
+        font-size: 24px;
+      }
 
-  .stat-label {
-    font-size: 10.5px;
-  }
+      .stat-label {
+        font-size: 10.5px;
+      }
 
-  .kpi-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 14px;
-  }
+      .kpi-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+      }
 
-  .kpi {
-    padding: 18px 20px;
-  }
+      .kpi {
+        padding: 18px 20px;
+      }
 
-  .kpi-value {
-    font-size: 29px;
-  }
+      .kpi-value {
+        font-size: 29px;
+      }
 
-  .chart-box {
-    padding: 20px 22px;
-  }
+      .chart-box {
+        padding: 20px 22px;
+      }
 
-  .bar-row {
-    grid-template-columns: 150px minmax(0, 1fr) 44px;
-    grid-template-rows: auto;
-    align-items: center;
-    gap: 10px;
-    padding: 3px 0;
-    border-bottom: none;
-  }
+      .bar-row {
+        grid-template-columns: 150px minmax(0, 1fr) 44px;
+        grid-template-rows: auto;
+        align-items: center;
+        gap: 10px;
+        padding: 3px 0;
+        border-bottom: none;
+      }
 
-  .bar-name {
-    grid-column: 1;
-    font-size: 12.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+      .bar-name {
+        grid-column: 1;
+        font-size: 12.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
 
-  .bar-track {
-    grid-column: 2;
-    height: 18px;
-    border-radius: 5px;
-  }
+      .bar-track {
+        grid-column: 2;
+        height: 18px;
+        border-radius: 5px;
+      }
 
-  .bar-fill {
-    border-radius: 5px;
-  }
+      .bar-fill {
+        border-radius: 5px;
+      }
 
-  .bar-value {
-    grid-column: 3;
-    font-size: 12.5px;
-  }
+      .bar-value {
+        grid-column: 3;
+        font-size: 12.5px;
+      }
 
-  .donut-wrap {
-    flex-direction: row;
-    gap: 16px;
-  }
+      .donut-wrap {
+        flex-direction: row;
+        gap: 16px;
+      }
 
-  .donut {
-    width: 152px;
-    height: 152px;
-  }
+      .donut {
+        width: 152px;
+        height: 152px;
+      }
 
-  .legend {
-    min-width: 148px;
-    width: auto;
-  }
+      .legend {
+        min-width: 148px;
+        width: auto;
+      }
 
-  .legend-row {
-    font-size: 12.5px;
-    border-bottom: none;
-  }
+      .legend-row {
+        font-size: 12.5px;
+        border-bottom: none;
+      }
 
-  .filters {
-    grid-template-columns: minmax(130px, 170px) minmax(160px, 220px) minmax(160px, 1fr) auto;
-    align-items: flex-end;
-  }
+      .filters {
+        grid-template-columns: minmax(130px, 170px) minmax(160px, 220px) minmax(160px, 1fr) auto;
+        align-items: flex-end;
+      }
 
-  .filters-action .btn {
-    width: auto;
-    padding: 0 16px;
-  }
+      .filters-action .btn {
+        width: auto;
+        padding: 0 16px;
+      }
 
-  .gate-card {
-    padding: 30px;
-  }
-}
+      .gate-card {
+        padding: 30px;
+      }
+    }
 
-@media (min-width: 861px) {
-  .page {
-    padding: 36px 0 64px;
-  }
+    @media (min-width: 861px) {
+      .page {
+        padding: 36px 0 64px;
+      }
 
-  .hero {
-    padding: 40px;
-  }
+      .hero {
+        padding: 40px;
+      }
 
-  .chart-grid {
-    grid-template-columns: 1.4fr 1fr;
-    gap: 16px;
-  }
+      .chart-grid {
+        grid-template-columns: 1.4fr 1fr;
+        gap: 16px;
+      }
 
-  .teacher-grid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  }
-}
+      .teacher-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      }
+    }
 
-@media (min-width: 1024px) {
-  .container {
-    padding: 0 24px;
-  }
-}
+    @media (min-width: 1024px) {
+      .container {
+        padding: 0 24px;
+      }
+    }
 
-@media (prefers-reduced-motion: reduce) {
+    @media (prefers-reduced-motion: reduce) {
 
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
 
-  html {
-    scroll-behavior: auto;
-  }
-}
+      html {
+        scroll-behavior: auto;
+      }
+    }

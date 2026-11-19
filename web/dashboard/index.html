@@ -1,284 +1,294 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Resultados · Evaluación Docente 2026 | Colegio Interamericano</title>
-<meta name="robots" content="noindex, nofollow" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet" />
-<link rel="icon" type="image/svg+xml" href="../assets/logo.svg" />
-<link rel="stylesheet" href="../styles.css?v=1.2.0" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resultados · Evaluación Docente 2026 | Colegio Interamericano</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300..900;1,300..900&display=swap"
+    rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="../assets/logo.svg" />
+  <link rel="stylesheet" href="../styles.css?v=1.2.1" />
 </head>
+
 <body>
 
-<!-- ============ CLAVE DE ACCESO ============ -->
-<div class="gate" id="gate">
-  <div class="card gate-card">
-    <div class="gate-icon"><i data-lucide="lock-keyhole"></i></div>
-    <h1 style="font-size:24px;">Dashboard de resultados</h1>
-    <p class="muted mt-2" style="font-size:14px;">Ingresa la clave para consultar los resultados.</p>
-    <form id="gateForm" class="stack mt-6" novalidate>
-      <div class="field">
-        <label class="label" for="gateKey">Clave de acceso</label>
-        <div class="password-wrap">
-          <input class="input" id="gateKey" type="password" autocomplete="current-password" />
-          <button class="password-toggle" id="toggleKey" type="button" aria-label="Mostrar clave" title="Mostrar clave">
-            <i data-lucide="eye"></i>
-          </button>
-        </div>
-      </div>
-      <div class="alert alert-error hidden" id="gateError">
-        <i data-lucide="circle-alert"></i><div>Clave incorrecta. Inténtalo de nuevo.</div>
-      </div>
-      <button class="btn btn-lg btn-block" type="submit" id="gateBtn">
-        <i data-lucide="log-in"></i><span>Entrar al dashboard</span>
-      </button>
-    </form>
-    <p class="hint text-center mt-4"><a id="backLink" href="../index.html"><i data-lucide="arrow-left" style="width:12px;height:12px;vertical-align:-2px;"></i> Volver a la evaluación</a></p>
-  </div>
-</div>
-
-<div class="gate" id="gateLoading" hidden>
-  <div class="card gate-card text-center" style="display:flex;flex-direction:column;align-items:center;padding:36px 24px;gap:14px;">
-    <div class="gate-icon" style="animation:spin 1s linear infinite;"><i data-lucide="loader-2"></i></div>
-    <h2 style="font-size:20px;">Cargando dashboard...</h2>
-    <p class="muted" style="font-size:13.5px;">Recuperando resultados más recientes</p>
-  </div>
-</div>
-
-<!-- ============ DASHBOARD ============ -->
-<div class="app-shell" id="dash" hidden>
-  <header class="topbar">
-    <div class="container topbar-inner">
-      <div class="brand">
-        <img class="brand-logo" src="../assets/logo.svg" alt="Colegio Interamericano" />
-        <div class="brand-text">
-          <div class="brand-title">Dashboard <span class="hide-mobile">· Evaluación Docente</span></div>
-          <div class="brand-sub" id="dashSub">Colegio Interamericano · 2026</div>
-        </div>
-      </div>
-      <div class="topbar-actions">
-        <button class="btn btn-outline btn-sm btn-auto" id="btnAutoRefresh" type="button" title="Auto-actualización (cada 30s)">
-          <span class="live-dot" id="liveDot"></span><span id="autoRefreshText">Auto 30s</span>
-        </button>
-        <button class="btn btn-outline btn-sm" id="btnRefresh" type="button" title="Actualizar datos ahora">
-          <i data-lucide="refresh-cw" id="iconRefresh"></i><span>Actualizar</span>
-        </button>
-        <button class="btn btn-ghost btn-sm btn-icon" id="btnPrint" type="button" title="Imprimir">
-          <i data-lucide="printer"></i>
-        </button>
-        <button class="btn btn-ghost btn-sm btn-icon" id="btnLogout" type="button" title="Salir">
-          <i data-lucide="log-out"></i>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <main class="page">
-    <div class="container stack">
-      <div class="dash-hero">
-        <div class="dash-hero-main">
-          <div class="eyebrow">Resultados agregados</div>
-          <h1 class="dash-title">Panorama de la evaluación</h1>
-          <p class="small muted" id="lastUpdated" style="margin-top: 2px;">Cargando datos…</p>
-        </div>
-        <div class="dash-hero-actions">
-          <span class="badge badge-primary" id="mockBadge" hidden><i data-lucide="flask-conical"></i>Modo demo</span>
-          <button class="btn btn-outline btn-sm" id="btnCsv" type="button">
-            <i data-lucide="download"></i><span>Exportar CSV</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Filtros -->
-      <div class="card card-pad">
-        <div class="filters">
-          <div class="field">
-            <label class="label" for="fGrade">Grado</label>
-            <select class="select" id="fGrade"><option value="">Todos los grados</option></select>
-          </div>
-          <div class="field">
-            <label class="label" for="fTeacher">Docente</label>
-            <select class="select" id="fTeacher"><option value="">Todos los docentes</option></select>
-          </div>
-          <div class="field field-search">
-            <label class="label" for="fSearch">Buscar docente</label>
-            <input class="input" id="fSearch" type="search" placeholder="Nombre del docente…" />
-          </div>
-          <div class="filters-action">
-            <button class="btn btn-outline" id="btnClear" type="button">
-              <i data-lucide="eraser"></i><span>Limpiar</span>
+  <!-- ============ CLAVE DE ACCESO ============ -->
+  <div class="gate" id="gate">
+    <div class="card gate-card">
+      <div class="gate-icon"><i data-lucide="lock-keyhole"></i></div>
+      <h1 style="font-size:24px;">Dashboard de resultados</h1>
+      <p class="muted mt-2" style="font-size:14px;">Ingresa la clave para consultar los resultados.</p>
+      <form id="gateForm" class="stack mt-6" novalidate>
+        <div class="field">
+          <label class="label" for="gateKey">Clave de acceso</label>
+          <div class="password-wrap">
+            <input class="input" id="gateKey" type="password" autocomplete="current-password" />
+            <button class="password-toggle" id="toggleKey" type="button" aria-label="Mostrar clave"
+              title="Mostrar clave">
+              <i data-lucide="eye"></i>
             </button>
           </div>
         </div>
-      </div>
-
-      <!-- KPIs -->
-      <div class="kpi-grid" id="kpiGrid"></div>
-
-      <!-- Gráficas -->
-      <div class="chart-grid">
-        <div class="card chart-box">
-          <div class="row-between">
-            <div>
-              <div class="chart-title">Favorabilidad por docente</div>
-              <div class="chart-sub">% de respuestas Sí · de mayor a menor</div>
-            </div>
-            <span class="badge" id="teacherChartCount">0 docentes</span>
-          </div>
-          <div class="bars" id="chartTeachers"></div>
+        <div class="alert alert-error hidden" id="gateError">
+          <i data-lucide="circle-alert"></i>
+          <div>Clave incorrecta. Inténtalo de nuevo.</div>
         </div>
-        <div class="card chart-box">
-          <div class="row-between">
-            <div>
-              <div class="chart-title">Distribución de respuestas</div>
-              <div class="chart-sub">Todas las preguntas respondidas</div>
-            </div>
-          </div>
-          <div class="donut-wrap mt-4">
-            <div class="donut" id="donut"></div>
-            <div class="legend" id="donutLegend"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="chart-grid">
-        <div class="card chart-box">
-          <div class="chart-title">Favorabilidad por dimensión</div>
-          <div class="chart-sub">% de respuestas Sí en cada aspecto</div>
-          <div class="bars" id="chartDimensions"></div>
-        </div>
-        <div class="card chart-box">
-          <div class="chart-title">Favorabilidad por grado</div>
-          <div class="chart-sub">Comparativo entre grados de bachillerato</div>
-          <div class="bars" id="chartGrades"></div>
-        </div>
-      </div>
-
-      <div class="chart-grid">
-        <div class="card chart-box">
-          <div class="chart-title">Participación por grado</div>
-          <div class="chart-sub">Estudiantes que respondieron frente al total matriculado</div>
-          <div class="bars" id="chartParticipation"></div>
-        </div>
-        <div class="card chart-box">
-          <div class="chart-title">Recursos reportados</div>
-          <div class="chart-sub">Menciones por recurso en el aula</div>
-          <div class="bars" id="chartResources"></div>
-        </div>
-      </div>
-
-      <div class="card chart-box">
-        <div class="chart-title">Favorabilidad por pregunta</div>
-        <div class="chart-sub">Preguntas ordenadas de menor a mayor % de Sí</div>
-        <div class="bars scroll" id="chartQuestions"></div>
-      </div>
-
-      <!-- Tabla -->
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Detalle por docente</div>
-            <div class="card-description" id="tableSub">—</div>
-          </div>
-          <span class="badge badge-outline" id="tableCount">0 filas</span>
-        </div>
-        <div class="table-wrap" style="border:0;border-radius:0;">
-          <table class="data" id="tableTeachers">
-            <thead>
-              <tr>
-                <th>Docente</th>
-                <th>Grados</th>
-                <th class="text-right">Evaluaciones</th>
-                <th class="text-right">Favorabilidad</th>
-                <th class="text-right">Nivel</th>
-                <th class="text-right" style="width: 95px;">Acción</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="card-footer small muted" id="privacyNote">
-          Las respuestas son anónimas. Los docentes con pocas respuestas se marcan como preliminares.
-        </div>
-      </div>
-
-      <p class="small muted text-center">Datos anónimos y agregados · Actualizado <span id="footStamp">—</span></p>
-    </div>
-  </main>
-
-  <footer class="footer">
-    <div class="container footer-inner">
-      <span>© <span id="footerYear">2026</span> Colegio Interamericano · Evaluación Docente</span>
-      <span>Resultados agregados</span>
-    </div>
-  </footer>
-</div>
-
-<div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
-
-<div class="modal-backdrop" id="modalTeacherDetail" hidden>
-  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="modalTeacherName">
-    <div class="modal-header-custom">
-      <div style="display:flex;align-items:center;gap:14px;min-width:0;">
-        <span class="avatar lg" id="modalTeacherAvatar">—</span>
-        <div style="min-width:0;">
-          <div class="eyebrow" id="modalTeacherEyebrow">Detalle del docente</div>
-          <h2 id="modalTeacherName" style="font-size:20px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</h2>
-          <div class="small muted" id="modalTeacherSubjects" style="margin-top:2px;">—</div>
-        </div>
-      </div>
-      <button class="modal-close-btn" id="modalCloseBtn" type="button" aria-label="Cerrar modal" title="Cerrar">
-        <i data-lucide="x"></i>
-      </button>
-    </div>
-
-    <!-- KPIs del docente -->
-    <div class="kpi-grid" id="modalTeacherKpis"></div>
-
-    <!-- Desglose por dimensiones y por grado -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:14px;" id="modalTeacherBreakdown"></div>
-
-    <!-- Recursos de aula -->
-    <div class="card card-pad">
-      <div class="chart-title">Recursos de aula utilizados</div>
-      <div class="chart-sub">Menciones de recursos según los estudiantes de este docente</div>
-      <div class="bars mt-3" id="modalTeacherResources"></div>
-    </div>
-
-    <!-- Preguntas detalladas -->
-    <div class="card card-pad">
-      <div class="chart-title">Resultados por pregunta</div>
-      <div class="chart-sub">Respuestas Sí / No para cada uno de los 20 aspectos evaluados</div>
-      <div class="stack mt-3" id="modalTeacherQuestions"></div>
-    </div>
-
-    <!-- Comentarios -->
-    <div class="card card-pad">
-      <div class="row-between">
-        <div class="chart-title">Comentarios de estudiantes</div>
-        <span class="badge badge-outline" id="modalCommentsCount">0 comentarios</span>
-      </div>
-      <div class="chart-sub">Comentarios anónimos registrados para este docente</div>
-      <div class="stack mt-3" id="modalTeacherComments"></div>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn btn-outline" id="modalCloseBottomBtn" type="button">Cerrar</button>
+        <button class="btn btn-lg btn-block" type="submit" id="gateBtn">
+          <i data-lucide="log-in"></i><span>Entrar al dashboard</span>
+        </button>
+      </form>
+      <p class="hint text-center mt-4"><a id="backLink" href="../index.html"><i data-lucide="arrow-left"
+            style="width:12px;height:12px;vertical-align:-2px;"></i> Volver a la evaluación</a></p>
     </div>
   </div>
-</div>
 
-<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-<script src="../config.js?v=1.2.0"></script>
-<script src="../api.js?v=1.2.0"></script>
-<script src="../dashboard.js?v=1.2.0"></script>
+  <div class="gate" id="gateLoading" hidden>
+    <div class="card gate-card text-center"
+      style="display:flex;flex-direction:column;align-items:center;padding:36px 24px;gap:14px;">
+      <div class="gate-icon" style="animation:spin 1s linear infinite;"><i data-lucide="loader-2"></i></div>
+      <h2 style="font-size:20px;">Cargando dashboard...</h2>
+      <p class="muted" style="font-size:13.5px;">Recuperando resultados más recientes</p>
+    </div>
+  </div>
+
+  <!-- ============ DASHBOARD ============ -->
+  <div class="app-shell" id="dash" hidden>
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <div class="brand">
+          <img class="brand-logo" src="../assets/logo.svg" alt="Colegio Interamericano" />
+          <div class="brand-text">
+            <div class="brand-title">Dashboard <span class="hide-mobile">· Evaluación Docente</span></div>
+            <div class="brand-sub" id="dashSub">Colegio Interamericano · 2026</div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-outline btn-sm btn-auto" id="btnAutoRefresh" type="button"
+            title="Auto-actualización (cada 30s)">
+            <span class="live-dot" id="liveDot"></span><span id="autoRefreshText">Auto 30s</span>
+          </button>
+          <button class="btn btn-outline btn-sm" id="btnRefresh" type="button" title="Actualizar datos ahora">
+            <i data-lucide="refresh-cw" id="iconRefresh"></i><span>Actualizar</span>
+          </button>
+          <button class="btn btn-ghost btn-sm btn-icon" id="btnPrint" type="button" title="Imprimir">
+            <i data-lucide="printer"></i>
+          </button>
+          <button class="btn btn-ghost btn-sm btn-icon" id="btnLogout" type="button" title="Salir">
+            <i data-lucide="log-out"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="container stack">
+        <div class="dash-hero">
+          <div class="dash-hero-main">
+            <div class="eyebrow">Resultados agregados</div>
+            <h1 class="dash-title">Panorama de la evaluación</h1>
+            <p class="small muted" id="lastUpdated" style="margin-top: 2px;">Cargando datos…</p>
+          </div>
+          <div class="dash-hero-actions">
+            <span class="badge badge-primary" id="mockBadge" hidden><i data-lucide="flask-conical"></i>Modo demo</span>
+            <button class="btn btn-outline btn-sm" id="btnCsv" type="button">
+              <i data-lucide="download"></i><span>Exportar CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card card-pad">
+          <div class="filters">
+            <div class="field">
+              <label class="label" for="fGrade">Grado</label>
+              <select class="select" id="fGrade">
+                <option value="">Todos los grados</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label" for="fTeacher">Docente</label>
+              <select class="select" id="fTeacher">
+                <option value="">Todos los docentes</option>
+              </select>
+            </div>
+            <div class="field field-search">
+              <label class="label" for="fSearch">Buscar docente</label>
+              <input class="input" id="fSearch" type="search" placeholder="Nombre del docente…" />
+            </div>
+            <div class="filters-action">
+              <button class="btn btn-outline" id="btnClear" type="button">
+                <i data-lucide="eraser"></i><span>Limpiar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <!-- Gráficas -->
+        <div class="chart-grid">
+          <div class="card chart-box">
+            <div class="row-between">
+              <div>
+                <div class="chart-title">Favorabilidad por docente</div>
+                <div class="chart-sub">% de respuestas Sí · de mayor a menor</div>
+              </div>
+              <span class="badge" id="teacherChartCount">0 docentes</span>
+            </div>
+            <div class="bars" id="chartTeachers"></div>
+          </div>
+          <div class="card chart-box">
+            <div class="row-between">
+              <div>
+                <div class="chart-title">Distribución de respuestas</div>
+                <div class="chart-sub">Todas las preguntas respondidas</div>
+              </div>
+            </div>
+            <div class="donut-wrap mt-4">
+              <div class="donut" id="donut"></div>
+              <div class="legend" id="donutLegend"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="card chart-box">
+            <div class="chart-title">Favorabilidad por dimensión</div>
+            <div class="chart-sub">% de respuestas Sí en cada aspecto</div>
+            <div class="bars" id="chartDimensions"></div>
+          </div>
+          <div class="card chart-box">
+            <div class="chart-title">Favorabilidad por grado</div>
+            <div class="chart-sub">Comparativo entre grados de bachillerato</div>
+            <div class="bars" id="chartGrades"></div>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="card chart-box">
+            <div class="chart-title">Participación por grado</div>
+            <div class="chart-sub">Estudiantes que respondieron frente al total matriculado</div>
+            <div class="bars" id="chartParticipation"></div>
+          </div>
+          <div class="card chart-box">
+            <div class="chart-title">Recursos reportados</div>
+            <div class="chart-sub">Menciones por recurso en el aula</div>
+            <div class="bars" id="chartResources"></div>
+          </div>
+        </div>
+
+        <div class="card chart-box">
+          <div class="chart-title">Favorabilidad por pregunta</div>
+          <div class="chart-sub">Preguntas ordenadas de menor a mayor % de Sí</div>
+          <div class="bars scroll" id="chartQuestions"></div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Detalle por docente</div>
+              <div class="card-description" id="tableSub">—</div>
+            </div>
+            <span class="badge badge-outline" id="tableCount">0 filas</span>
+          </div>
+          <div class="table-wrap" style="border:0;border-radius:0;">
+            <table class="data" id="tableTeachers">
+              <thead>
+                <tr>
+                  <th>Docente</th>
+                  <th>Grados</th>
+                  <th class="text-right">Evaluaciones</th>
+                  <th class="text-right">Favorabilidad</th>
+                  <th class="text-right">Nivel</th>
+                  <th class="text-right" style="width: 95px;">Acción</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="card-footer small muted" id="privacyNote">
+            Las respuestas son anónimas. Los docentes con pocas respuestas se marcan como preliminares.
+          </div>
+        </div>
+
+        <p class="small muted text-center">Datos anónimos y agregados · Actualizado <span id="footStamp">—</span></p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <span>© <span id="footerYear">2026</span> Colegio Interamericano · Evaluación Docente</span>
+        <span>Resultados agregados</span>
+      </div>
+    </footer>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+  <div class="modal-backdrop" id="modalTeacherDetail" hidden>
+    <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="modalTeacherName">
+      <div class="modal-header-custom">
+        <div style="display:flex;align-items:center;gap:14px;min-width:0;">
+          <span class="avatar lg" id="modalTeacherAvatar">—</span>
+          <div style="min-width:0;">
+            <div class="eyebrow" id="modalTeacherEyebrow">Detalle del docente</div>
+            <h2 id="modalTeacherName"
+              style="font-size:20px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</h2>
+            <div class="small muted" id="modalTeacherSubjects" style="margin-top:2px;">—</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="modalCloseBtn" type="button" aria-label="Cerrar modal" title="Cerrar">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- KPIs del docente -->
+      <div class="kpi-grid" id="modalTeacherKpis"></div>
+
+      <!-- Desglose por dimensiones y por grado -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:14px;"
+        id="modalTeacherBreakdown"></div>
+
+      <!-- Recursos de aula -->
+      <div class="card card-pad">
+        <div class="chart-title">Recursos de aula utilizados</div>
+        <div class="chart-sub">Menciones de recursos según los estudiantes de este docente</div>
+        <div class="bars mt-3" id="modalTeacherResources"></div>
+      </div>
+
+      <!-- Preguntas detalladas -->
+      <div class="card card-pad">
+        <div class="chart-title">Resultados por pregunta</div>
+        <div class="chart-sub">Respuestas Sí / No para cada uno de los 20 aspectos evaluados</div>
+        <div class="stack mt-3" id="modalTeacherQuestions"></div>
+      </div>
+
+      <!-- Comentarios -->
+      <div class="card card-pad">
+        <div class="row-between">
+          <div class="chart-title">Comentarios de estudiantes</div>
+          <span class="badge badge-outline" id="modalCommentsCount">0 comentarios</span>
+        </div>
+        <div class="chart-sub">Comentarios anónimos registrados para este docente</div>
+        <div class="stack mt-3" id="modalTeacherComments"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="modalCloseBottomBtn" type="button">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script src="../config.js?v=1.2.1"></script>
+  <script src="../api.js?v=1.2.1"></script>
+  <script src="../dashboard.js?v=1.2.1"></script>
 </body>
+
 </html>
-
-
-
-
-

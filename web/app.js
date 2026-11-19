@@ -215,26 +215,36 @@
     state.student = student;
     saveStudent(student);
 
-    $('#btnStart').disabled = true;
+    var btn = $('#btnStart');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="is-spinning" style="display:inline-flex;align-items:center;animation:spin 1s linear infinite;margin-right:6px;"><i data-lucide="loader-2"></i></span><span>Cargando docentes…</span>';
+      icons();
+    }
+
+    // Carga instantánea (0ms): los docentes del grado ya están en memoria local
+    state.gradeTeachers = teachersForGrade(student.gradeId);
+    state.evaluated = new Set(localProgress(student.id).map(String));
+    renderTeachers();
+    showScreen('screen-teachers');
+
+    // Sincronizar en segundo plano con el servidor por si ya evaluó docentes previamente
     Api.getStudentProgress(student.id).then(function (res) {
       var serverList = (res && res.evaluated) || [];
-      var localList = localProgress(student.id);
-      var merged = serverList.concat(localList);
-      state.evaluated = new Set(merged.map(String));
-
-      state.gradeTeachers = teachersForGrade(student.gradeId);
-
-      renderTeachers();
-      showScreen('screen-teachers');
-      if (res && res.ok === false) toast('No se pudo verificar tu avance en línea.', 'error');
+      if (serverList.length) {
+        var localList = localProgress(student.id);
+        var merged = serverList.concat(localList);
+        state.evaluated = new Set(merged.map(String));
+        renderTeachers();
+      }
     }).catch(function () {
-      state.gradeTeachers = teachersForGrade(student.gradeId);
-      state.evaluated = new Set(localProgress(student.id).map(String));
-      renderTeachers();
-      showScreen('screen-teachers');
-      toast('Sin conexión con el servidor: tu avance se guardó en este dispositivo.', 'error');
+      // Si no hay conexión, se mantiene el progreso guardado en este dispositivo
     }).then(function () {
-      $('#btnStart').disabled = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Comenzar evaluación</span><i data-lucide="arrow-right"></i>';
+        icons();
+      }
     });
   }
 
@@ -427,7 +437,8 @@
 
     var btn = $('#btnSubmit');
     btn.disabled = true;
-    btn.querySelector('span').textContent = 'Enviando…';
+    btn.innerHTML = '<span class="is-spinning" style="display:inline-flex;align-items:center;animation:spin 1s linear infinite;margin-right:6px;"><i data-lucide="loader-2"></i></span><span>Guardando respuestas…</span>';
+    icons();
 
     var g = currentGrade();
     var payload = {
@@ -453,7 +464,8 @@
       }
       toast(msg, 'error');
       btn.disabled = false;
-      btn.querySelector('span').textContent = 'Enviar evaluación';
+      btn.innerHTML = '<i data-lucide="send"></i><span>Enviar evaluación</span>';
+      icons();
     });
   }
 
