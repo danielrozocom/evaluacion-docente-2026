@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet" />
 <link rel="icon" type="image/svg+xml" href="../assets/logo.svg" />
-<link rel="stylesheet" href="../styles.css?v=1.1.2" />
+<link rel="stylesheet" href="../styles.css?v=1.1.3" />
 </head>
 <body>
 
@@ -47,12 +47,12 @@
       <div class="brand">
         <img class="brand-logo" src="../assets/logo.svg" alt="Colegio Interamericano" />
         <div class="brand-text">
-          <div class="brand-title">Dashboard · Evaluación Docente</div>
+          <div class="brand-title">Dashboard <span class="hide-mobile">· Evaluación Docente</span></div>
           <div class="brand-sub" id="dashSub">Colegio Interamericano · 2026</div>
         </div>
       </div>
       <div class="topbar-actions">
-        <button class="btn btn-outline btn-sm" id="btnRefresh" type="button">
+        <button class="btn btn-outline btn-sm" id="btnRefresh" type="button" title="Actualizar datos">
           <i data-lucide="refresh-cw"></i><span>Actualizar</span>
         </button>
         <button class="btn btn-ghost btn-sm btn-icon" id="btnPrint" type="button" title="Imprimir">
@@ -67,13 +67,13 @@
 
   <main class="page">
     <div class="container stack">
-      <div class="row-between">
-        <div>
+      <div class="dash-hero">
+        <div class="dash-hero-main">
           <div class="eyebrow">Resultados agregados</div>
-          <h1 style="font-size: 25px; margin-top: 2px;">Panorama de la evaluación</h1>
-          <p class="small muted mt-2" id="lastUpdated">Cargando datos…</p>
+          <h1 class="dash-title">Panorama de la evaluación</h1>
+          <p class="small muted" id="lastUpdated" style="margin-top: 2px;">Cargando datos…</p>
         </div>
-        <div class="row">
+        <div class="dash-hero-actions">
           <span class="badge badge-primary" id="mockBadge" hidden><i data-lucide="flask-conical"></i>Modo demo</span>
           <button class="btn btn-outline btn-sm" id="btnCsv" type="button">
             <i data-lucide="download"></i><span>Exportar CSV</span>
@@ -92,13 +92,15 @@
             <label class="label" for="fTeacher">Docente</label>
             <select class="select" id="fTeacher"><option value="">Todos los docentes</option></select>
           </div>
-          <div class="field" style="flex:1; min-width: 200px;">
-            <label class="label" for="fSearch">Buscar</label>
+          <div class="field field-search">
+            <label class="label" for="fSearch">Buscar docente</label>
             <input class="input" id="fSearch" type="search" placeholder="Nombre del docente…" />
           </div>
-          <button class="btn btn-outline" id="btnClear" type="button" style="height:38px;">
-            <i data-lucide="eraser"></i><span>Limpiar</span>
-          </button>
+          <div class="filters-action">
+            <button class="btn btn-outline" id="btnClear" type="button">
+              <i data-lucide="eraser"></i><span>Limpiar</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -259,9 +261,9 @@
 </div>
 
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-<script src="../config.js?v=1.1.2"></script>
-<script src="../api.js?v=1.1.2"></script>
-<script src="../dashboard.js?v=1.1.2"></script>
+<script src="../config.js?v=1.1.3"></script>
+<script src="../api.js?v=1.1.3"></script>
+<script src="../dashboard.js?v=1.1.3"></script>
 </body>
 </html>
 

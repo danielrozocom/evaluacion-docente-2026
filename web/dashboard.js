@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    Dashboard de resultados · Evaluación Docente 2026
    Instrumento Sí / No → se reporta % de favorabilidad.
    ============================================================ */
@@ -502,22 +502,22 @@
         : '';
 
       return '<tr class="is-clickable" data-teacher-id="' + esc(t.id) + '" title="Clic para ver detalle de ' + esc(t.name) + '">' +
-        '<td>' +
-          '<div style="display:flex;align-items:center;gap:10px;">' +
+        '<td data-label="Docente">' +
+          '<div class="teacher-cell">' +
             avatarHTML(teacher || { name: t.name, photo: '' }) +
-            '<div>' +
+            '<div class="teacher-info">' +
               '<div class="cell-strong">' + esc(t.name) + '</div>' +
-              (subjects ? '<div class="small muted" style="font-size:11px;">' + esc(subjects) + '</div>' : '') +
+              (subjects ? '<div class="small muted teacher-sub">' + esc(subjects) + '</div>' : '') +
             '</div>' +
           '</div>' +
         '</td>' +
-        '<td>' + t.grades.map(function (g) { return '<span class="chip">' + esc(g) + '</span>'; }).join(' ') + '</td>' +
-        '<td class="text-right">' + t.n + (minN && t.n < minN ? ' <span class="badge badge-warning">bajo</span>' : '') + '</td>' +
-        '<td class="text-right"><span class="num-tag ' + lv.tag + '">' + fmtPct(t.avg) + '</span></td>' +
-        '<td class="text-right"><span class="badge ' + lv.cls + '">' + lv.text + '</span></td>' +
-        '<td class="text-right">' +
-          '<button class="btn btn-outline btn-sm" type="button" data-teacher-id="' + esc(t.id) + '" style="padding:0 9px;height:28px;min-height:28px;font-size:11.5px;gap:4px;">' +
-            '<i data-lucide="eye" style="width:13px;height:13px;"></i><span>Detalle</span>' +
+        '<td data-label="Grados"><div class="chips-wrap">' + t.grades.map(function (g) { return '<span class="chip">' + esc(g) + '</span>'; }).join(' ') + '</div></td>' +
+        '<td data-label="Evaluaciones" class="text-right-dt"><span class="td-val">' + t.n + '</span>' + (minN && t.n < minN ? ' <span class="badge badge-warning">bajo</span>' : '') + '</td>' +
+        '<td data-label="Favorabilidad" class="text-right-dt"><span class="num-tag ' + lv.tag + '">' + fmtPct(t.avg) + '</span></td>' +
+        '<td data-label="Nivel" class="text-right-dt"><span class="badge ' + lv.cls + '">' + lv.text + '</span></td>' +
+        '<td data-label="Acción" class="text-right-dt">' +
+          '<button class="btn btn-outline btn-sm btn-detail" type="button" data-teacher-id="' + esc(t.id) + '">' +
+            '<i data-lucide="eye"></i><span>Ver detalle</span>' +
           '</button>' +
         '</td>' +
       '</tr>';
