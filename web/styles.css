@@ -1302,6 +1302,7 @@ svg {
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
+
 .modal-backdrop[hidden],
 .modal-backdrop.hidden {
   display: none !important;
@@ -1771,7 +1772,6 @@ table.data tbody tr.is-clickable:hover {
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.2;
-  background: transparent !important;
 }
 
 .kpi-value small {
@@ -2143,6 +2143,7 @@ table.data tbody tr.is-clickable:hover {
     align-items: center;
     justify-content: center;
   }
+
   .modal-backdrop[hidden],
   .modal-backdrop.hidden {
     display: none !important;
