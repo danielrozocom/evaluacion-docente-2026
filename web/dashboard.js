@@ -104,7 +104,14 @@
     };
   }
 
-  function loadData(key) {
+  var AUTO_INTERVAL_MS = 30000;
+  var autoTimer = null;
+  var countdownTimer = null;
+  var nextRefreshTime = 0;
+  var autoRefreshEnabled = true;
+  var isRefreshing = false;
+
+  function loadData(key, isSilent) {
     return Api.getDashboardData(key).then(function (res) {
       if (!res || res.ok === false) throw new Error((res && res.message) || 'No autorizado.');
       state.key = key;
@@ -113,9 +120,97 @@
       state.rows = (res.rows || []).map(normalizeRow);
       state.mock = !!res.mock;
       try { sessionStorage.setItem(SS_KEY, key); } catch (e) {}
+
       setupDashboard();
       showDash();
+
+      // Si el modal de detalle por docente está abierto, refrescarlo en vivo con los nuevos datos
+      var modal = $('#modalTeacherDetail');
+      if (modal && !modal.hidden && state.currentDetailTeacherId) {
+        openTeacherDetail(state.currentDetailTeacherId);
+      }
+
+      if (!autoTimer && autoRefreshEnabled) {
+        startAutoRefresh();
+      }
     });
+  }
+
+  function startAutoRefresh() {
+    stopAutoRefresh();
+    if (!autoRefreshEnabled || !state.key) return;
+
+    nextRefreshTime = Date.now() + AUTO_INTERVAL_MS;
+    updateAutoRefreshUI();
+
+    autoTimer = setInterval(function () {
+      if (document.hidden) return;
+      silentRefresh();
+    }, AUTO_INTERVAL_MS);
+
+    countdownTimer = setInterval(updateCountdown, 1000);
+  }
+
+  function stopAutoRefresh() {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+    updateAutoRefreshUI();
+  }
+
+  function silentRefresh() {
+    if (isRefreshing || !state.key) return;
+    isRefreshing = true;
+    var icon = $('#iconRefresh');
+    if (icon) icon.classList.add('is-spinning');
+
+    loadData(state.key, true)
+      .catch(function (e) {
+        console.warn('Auto-refresh silencioso:', e);
+      })
+      .then(function () {
+        isRefreshing = false;
+        if (icon) icon.classList.remove('is-spinning');
+        nextRefreshTime = Date.now() + AUTO_INTERVAL_MS;
+        updateCountdown();
+      });
+  }
+
+  function updateCountdown() {
+    if (!autoRefreshEnabled || !state.key) return;
+    var remaining = Math.max(0, Math.round((nextRefreshTime - Date.now()) / 1000));
+    var textEl = $('#autoRefreshText');
+    if (textEl) {
+      textEl.textContent = 'Auto ' + remaining + 's';
+    }
+  }
+
+  function updateAutoRefreshUI() {
+    var dot = $('#liveDot');
+    var textEl = $('#autoRefreshText');
+    var btn = $('#btnAutoRefresh');
+    if (!dot || !textEl || !btn) return;
+
+    if (autoRefreshEnabled && state.key) {
+      dot.classList.remove('paused');
+      btn.setAttribute('title', 'Auto-actualización cada 30s. Clic para pausar.');
+    } else {
+      dot.classList.add('paused');
+      textEl.textContent = 'Auto Pausado';
+      btn.setAttribute('title', 'Auto-actualización pausada. Clic para activar.');
+    }
+  }
+
+  function toggleAutoRefresh() {
+    autoRefreshEnabled = !autoRefreshEnabled;
+    if (autoRefreshEnabled) {
+      toast('Actualización automática activada (cada 30s).');
+      silentRefresh();
+      startAutoRefresh();
+    } else {
+      stopAutoRefresh();
+      toast('Actualización automática pausada.');
+    }
+    updateAutoRefreshUI();
   }
 
   /* ---------------- Acceso ---------------- */
@@ -139,6 +234,10 @@
     $('#footerYear').textContent = new Date().getFullYear();
     $('#mockBadge').hidden = !state.mock;
 
+    var prevGrade = state.filters.grade;
+    var prevTeacher = state.filters.teacher;
+    var prevSearch = state.filters.search;
+
     $('#fGrade').innerHTML = '<option value="">Todos los grados</option>' + cfg.grades.map(function (g) {
       return '<option value="' + esc(g.id) + '">' + esc(g.name) + '</option>';
     }).join('');
@@ -147,6 +246,10 @@
     $('#fTeacher').innerHTML = '<option value="">Todos los docentes</option>' + teachers.map(function (t) {
       return '<option value="' + esc(t.id) + '">' + esc(t.name) + '</option>';
     }).join('');
+
+    if (prevGrade) $('#fGrade').value = prevGrade;
+    if (prevTeacher) $('#fTeacher').value = prevTeacher;
+    if (prevSearch && $('#fSearch')) $('#fSearch').value = prevSearch;
 
     bindFilters();
     bindInteractions();
@@ -527,6 +630,7 @@
 
   /* ---------------- Modal de Detalle por Docente ---------------- */
   function openTeacherDetail(teacherId) {
+    state.currentDetailTeacherId = teacherId;
     var teacher = (state.config.teachers || []).filter(function (t) { return t.id === teacherId; })[0];
     var teacherRows = state.filtered.filter(function (r) { return r.teacherId === teacherId; });
 
@@ -720,6 +824,7 @@
   }
 
   function closeTeacherDetail() {
+    state.currentDetailTeacherId = null;
     var m = $('#modalTeacherDetail');
     if (m) m.hidden = true;
     document.body.style.overflow = '';
@@ -800,12 +905,29 @@
     $('#btnRefresh').addEventListener('click', function () {
       if (!state.key) return;
       $('#btnRefresh').disabled = true;
+      var icon = $('#iconRefresh');
+      if (icon) icon.classList.add('is-spinning');
       loadData(state.key).then(function () { toast('Datos actualizados.'); })
         .catch(function () { toast('No se pudieron actualizar los datos.', 'error'); })
-        .then(function () { $('#btnRefresh').disabled = false; });
+        .then(function () {
+          $('#btnRefresh').disabled = false;
+          if (icon) icon.classList.remove('is-spinning');
+          nextRefreshTime = Date.now() + AUTO_INTERVAL_MS;
+          updateCountdown();
+        });
+    });
+
+    var autoBtn = $('#btnAutoRefresh');
+    if (autoBtn) autoBtn.addEventListener('click', toggleAutoRefresh);
+
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden && autoRefreshEnabled && state.key && (Date.now() > nextRefreshTime)) {
+        silentRefresh();
+      }
     });
 
     $('#btnLogout').addEventListener('click', function () {
+      stopAutoRefresh();
       try { sessionStorage.removeItem(SS_KEY); } catch (e) {}
       state.key = '';
       showGate(false);

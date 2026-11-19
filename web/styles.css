@@ -489,6 +489,53 @@ table.data tbody tr.is-clickable:hover {
   .hide-mobile { display: none !important; }
 }
 
+/* Auto-refresh indicator & animations */
+.btn-auto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 0 10px;
+  height: 34px;
+  min-height: 34px;
+  border-radius: var(--radius);
+}
+@media (max-width: 480px) {
+  .btn-auto {
+    padding: 0 8px;
+    font-size: 11px;
+  }
+}
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(47, 125, 91, 0.7);
+  animation: pulse-green 2s infinite;
+  flex: none;
+}
+.live-dot.paused {
+  background: var(--muted-foreground);
+  box-shadow: none;
+  animation: none;
+}
+@keyframes pulse-green {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(47, 125, 91, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(47, 125, 91, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(47, 125, 91, 0); }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.is-spinning {
+  animation: spin 800ms linear infinite;
+  display: inline-block;
+}
+
 /* ============================================================
    Dashboard (Mobile First)
    ============================================================ */
