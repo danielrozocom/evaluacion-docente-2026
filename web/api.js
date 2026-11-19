@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    Capa de datos del frontend
    - Producción: backend en Google Apps Script vía JSONP.
      (El sitio es estático y vive fuera de Apps Script.)
@@ -9,6 +9,7 @@
 
   var API_URL = String(global.APP_API_URL || '').trim();
   var MOCK = !API_URL;
+  var SAME_ORIGIN = API_URL.charAt(0) === '/';
   var MOCK_KEY = 'ed_mock_responses_v1';
   var TIMEOUT = 30000;
 
@@ -56,6 +57,24 @@
     });
   }
 
+  /* ---------------- Transporte ---------------- */
+  function request(action, params) {
+    if (!SAME_ORIGIN) return jsonp(action, params);
+
+    var qs = new URLSearchParams({ action: action });
+    Object.keys(params || {}).forEach(function (k) {
+      var v = params[k];
+      if (v === undefined || v === null) return;
+      qs.set(k, v);
+    });
+
+    return fetch(API_URL + '?' + qs.toString(), { headers: { Accept: 'application/json' } })
+      .then(function (res) {
+        if (!res.ok) throw new Error('El servidor respondió ' + res.status + '.');
+        return res.json();
+      });
+  }
+
   /* ---------------- Mock local ---------------- */
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
@@ -81,7 +100,7 @@
     },
 
     getStudentProgress: function (doc) {
-      if (!MOCK) return jsonp('progress', { id: doc });
+      if (!MOCK) return request('progress', { id: doc });
 
       var rows = readMock();
       var evaluated = rows
@@ -93,7 +112,7 @@
     },
 
     submitEvaluation: function (payload) {
-      if (!MOCK) return jsonp('submit', { payload: JSON.stringify(payload) });
+      if (!MOCK) return request('submit', { payload: JSON.stringify(payload) });
 
       var rows = readMock();
       var sid = String(payload.studentId || '');
@@ -139,7 +158,7 @@
     },
 
     getDashboardData: function (key) {
-      if (!MOCK) return jsonp('dashboard', { key: key });
+      if (!MOCK) return request('dashboard', { key: key });
 
       return sleep(320).then(function () {
         if (!String(key || '').trim()) {
@@ -160,3 +179,4 @@
 
   global.Api = api;
 })(window);
+

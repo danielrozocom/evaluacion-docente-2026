@@ -8,6 +8,8 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..', 'web');
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
+const GAS_URL = process.env.GAS_URL ||
+  'https://script.google.com/macros/s/AKfycbw38XFOFOPFHn92md0TPlfAZc-aPU3LAOz0tP2Jh1LhkvQqa2_4DXdXa6I0e35x4aR3Vg/exec';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -30,6 +32,24 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (url === '/api') {
+    const query = (req.url || '').split('?')[1] || '';
+    fetch(GAS_URL + (query ? '?' + query : ''), { redirect: 'follow' })
+      .then(function (r) { return r.text().then(function (body) { return { status: r.status, body: body }; }); })
+      .then(function (out) {
+        res.writeHead(out.status >= 200 && out.status < 300 ? 200 : 502, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-store',
+        });
+        res.end(out.body);
+      })
+      .catch(function () {
+        res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: false, message: 'No se pudo conectar con el backend.' }));
+      });
+    return;
+  }
+
   if (!url.startsWith('/')) url = '/' + url;
   if (url.endsWith('/')) url += 'index.html';
   if (!path.extname(url)) url += '/index.html';
@@ -47,7 +67,7 @@ const server = http.createServer((req, res) => {
     }
     res.writeHead(200, {
       'Content-Type': MIME[path.extname(file)] || 'application/octet-stream',
-      'Cache-Control': /\.(webp|svg|png|jpg|css|js)$/i.test(file) ? 'public, max-age=86400' : 'no-cache',
+      'Cache-Control': /\.(webp|svg|png|jpg|jpeg|ico)$/i.test(file) ? 'public, max-age=3600' : 'no-cache',
     });
     res.end(req.method === 'HEAD' ? undefined : data);
   });

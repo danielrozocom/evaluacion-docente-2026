@@ -27,8 +27,9 @@ Navegador (sitio estático)                     Google
 ```
 
 - **El frontend NO vive dentro de Apps Script.** Se publica aparte (Dokploy / Nixpacks u otro hosting estático).
-- Apps Script solo expone la API y escribe/lee la hoja de cálculo vinculada.
-- La comunicación usa **JSONP** porque los Web Apps de Apps Script no envían cabeceras CORS.
+- El navegador llama a **`/api`** en el mismo dominio; el servidor Bun reenvía la petición a Apps Script (sin CORS, sin JSONP y sin depender de la sesión de Google del estudiante).
+- Apps Script escribe y lee la hoja de cálculo vinculada.
+- También se mantiene un transporte JSONP de respaldo si se configura una URL absoluta de Apps Script.
 
 ### Endpoints (GET)
 
