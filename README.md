@@ -1,4 +1,4 @@
-# Evaluación Docente 2026 · Colegio Interamericano
+﻿# Evaluación Docente 2026 · Colegio Interamericano
 
 Sistema de evaluación docente **mobile first**, estilo **shadcn/ui**, color principal `#364b87`, tipografía **Nunito**, **Vanilla JS**, backend en **Google Apps Script** y respuestas en **Google Sheets**.
 
@@ -26,7 +26,7 @@ Navegador (sitio estático)                     Google
                                                └──────────────────────────┘
 ```
 
-- **El frontend NO vive dentro de Apps Script.** Se publica aparte (GitHub Pages u otro hosting estático).
+- **El frontend NO vive dentro de Apps Script.** Se publica aparte (Dokploy / Nixpacks u otro hosting estático).
 - Apps Script solo expone la API y escribe/lee la hoja de cálculo vinculada.
 - La comunicación usa **JSONP** porque los Web Apps de Apps Script no envían cabeceras CORS.
 
@@ -50,8 +50,8 @@ Todas aceptan `&callback=nombre` para JSONP.
 npm run dev
 ```
 
-- App: http://localhost:5173
-- Dashboard: http://localhost:5173/dashboard/
+- App: http://localhost:3000
+- Dashboard: http://localhost:3000/dashboard/
 - En local cualquier clave no vacía abre el dashboard (los datos se guardan en `localStorage`).
 
 No requiere conexión con Google. Es solo para validar diseño y flujo en celular.
@@ -166,16 +166,23 @@ Para modificar preguntas o matrícula: editar `scripts/generate-seed.js` y ejecu
 
 ---
 
-## 6. Publicación del sitio
+## 6. Publicación del sitio (Dokploy / Nixpacks con Bun)
 
-Con GitHub Actions (`.github/workflows/pages.yml`) se publica la carpeta `web/` en GitHub Pages en cada push a `main`.
+El proyecto está preparado para desplegarse como servicio web estático:
 
-URL esperada:
+- `nixpacks.toml` instala **Bun**, ejecuta `bun run build` y arranca con `bun run start`.
+- `bun scripts/serve.js` sirve la carpeta `web/` y escucha en `0.0.0.0:$PORT`.
+- Si `PORT` no está definido, usa el puerto **3000** (el que espera el proxy por defecto).
+- Health check: `GET /health`.
 
-- App: `https://danielrozocom.github.io/evaluacion-docente-2026/`
-- Dashboard: `https://danielrozocom.github.io/evaluacion-docente-2026/dashboard/`
+Configuración en Dokploy:
 
-> GitHub Pages para repositorios privados requiere plan pago. Si el repositorio sigue privado, se puede publicar la misma carpeta `web/` en Netlify, Vercel, Cloudflare Pages o cualquier hosting estático.
+1. Build: **Nixpacks**.
+2. Puerto del contenedor: el mismo que `PORT` (por defecto **3000**).
+3. Dominio: `https://evaluaciondocente.interfundeoms.edu.co`.
+4. No se requiere base de datos ni variables de entorno adicionales.
+
+> Si el proxy muestra **Bad Gateway**, revisa que el puerto del contenedor coincida con el puerto donde escucha el proceso (3000 si `PORT` no está configurado).
 
 ---
 
@@ -196,3 +203,4 @@ npm run refresh    # seed + build
 - El identificador es anónimo y se regenera al finalizar la encuesta.
 - Los reportes son agregados.
 - Las fotos y nombres de docentes son los usados institucionalmente para la evaluación.
+
