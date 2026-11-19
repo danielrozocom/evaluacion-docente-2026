@@ -145,11 +145,13 @@ function submitEvaluation(payload) {
     const assignments = (teacher.assignments || []).filter(function (a) { return String(a.gradeId) === gradeId; });
     if (!assignments.length) throw new Error('El docente no dicta clase en este grado.');
 
-    const area = assignments[0].area || '';
+    const areas = [];
     const subjects = [];
     assignments.forEach(function (a) {
+      if (a.area && areas.indexOf(a.area) === -1) areas.push(a.area);
       if (a.subject && subjects.indexOf(a.subject) === -1) subjects.push(a.subject);
     });
+    const area = areas.join(', ');
 
     const answers = payload.answers || {};
     const cleanAnswers = {};
@@ -331,6 +333,7 @@ function onOpen() {
       .addItem('⚙️ Configurar sistema', 'setup')
       .addItem('🔗 Ver URL del backend', 'showUrls_')
       .addItem('🔑 Ver clave del dashboard', 'showKey_')
+      .addItem('🔄 Corregir áreas en respuestas actuales', 'corregirAreasExistentesMenu_')
       .addToUi();
   } catch (err) {}
 }
@@ -343,6 +346,64 @@ function showUrls_() {
 function showKey_() {
   const key = PropertiesService.getScriptProperties().getProperty(PROP_DASHBOARD_KEY) || DEFAULT_DASHBOARD_KEY;
   SpreadsheetApp.getUi().alert('Clave del dashboard: ' + key);
+}
+
+function corregirAreasExistentesMenu_() {
+  const msg = corregirAreasExistentes();
+  SpreadsheetApp.getUi().alert(msg);
+}
+
+/**
+ * Utilidad administrativa: recorre la hoja Respuestas y actualiza la columna 'Área'
+ * con todas las áreas que corresponden al docente en ese grado, corrigiendo filas existentes
+ * sin borrar ninguna columna ni alterar preguntas.
+ */
+function corregirAreasExistentes() {
+  const sh = getResponsesSheet_();
+  const last = sh.getLastRow();
+  if (last < 2) return 'No hay respuestas para corregir.';
+
+  const headers = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  const colDocenteId = headers.indexOf('DocenteID') + 1;
+  const colDocente = headers.indexOf('Docente') + 1;
+  const colGrado = headers.indexOf('Grado') + 1;
+  const colArea = headers.indexOf('Área') + 1;
+
+  if (!colDocenteId || !colGrado || !colArea) throw new Error('Columnas no encontradas en la hoja.');
+
+  const rows = sh.getRange(2, 1, last - 1, headers.length).getValues();
+  let corregidas = 0;
+
+  rows.forEach(function (row, idx) {
+    const teacherId = String(row[colDocenteId - 1]).trim();
+    const teacherName = String(row[colDocente - 1]).trim();
+    const gradeName = String(row[colGrado - 1]).trim();
+
+    const teacher = (CONFIG.teachers || []).filter(function (t) {
+      return String(t.id) === teacherId || t.name === teacherName;
+    })[0];
+
+    const grade = (CONFIG.grades || []).filter(function (g) {
+      return g.name === gradeName || String(g.id) === gradeName;
+    })[0];
+
+    if (teacher && grade) {
+      const assigns = (teacher.assignments || []).filter(function (a) {
+        return String(a.gradeId) === String(grade.id);
+      });
+      const areas = [];
+      assigns.forEach(function (a) {
+        if (a.area && areas.indexOf(a.area) === -1) areas.push(a.area);
+      });
+      const newArea = areas.join(', ');
+      if (newArea && newArea !== String(row[colArea - 1]).trim()) {
+        sh.getRange(idx + 2, colArea).setValue(newArea);
+        corregidas++;
+      }
+    }
+  });
+
+  return 'Se actualizaron las áreas de ' + corregidas + ' respuestas en la hoja.';
 }
 
 /* ------------------------------------------------------------
