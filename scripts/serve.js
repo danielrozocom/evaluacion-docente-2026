@@ -1,24 +1,35 @@
-// Servidor local para previsualizar el sitio (modo demo con localStorage).
-// Uso: npm run dev  →  http://localhost:5173
+// Servidor estático del sitio (local y producción).
+// Local:      npm run dev   → http://localhost:5173
+// Producción: npm run start → usa $PORT (Dokploy / Nixpacks / Bun)
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..', 'web');
-const PORT = process.env.PORT || 5173;
+const PORT = Number(process.env.PORT) || 5173;
+const HOST = process.env.HOST || '0.0.0.0';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.webp': 'image/webp',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
   '.ico': 'image/x-icon',
 };
 
 const server = http.createServer((req, res) => {
   let url = decodeURIComponent((req.url || '/').split('?')[0]);
+  if (url === '/health' || url === '/healthz') {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
   if (!url.startsWith('/')) url = '/' + url;
   if (url.endsWith('/')) url += 'index.html';
   if (!path.extname(url)) url += '/index.html';
@@ -36,15 +47,14 @@ const server = http.createServer((req, res) => {
     }
     res.writeHead(200, {
       'Content-Type': MIME[path.extname(file)] || 'application/octet-stream',
-      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': /\.(webp|svg|png|jpg|css|js)$/i.test(file) ? 'public, max-age=86400' : 'no-cache',
     });
-    res.end(data);
+    res.end(req.method === 'HEAD' ? undefined : data);
   });
 });
 
-server.listen(PORT, () => {
-  console.log('Evaluación Docente (demo local)');
-  console.log('  App:       http://localhost:' + PORT);
-  console.log('  Dashboard: http://localhost:' + PORT + '/dashboard/');
-  console.log('  Clave demo: demo2026');
+server.listen(PORT, HOST, () => {
+  console.log('Evaluación Docente · Colegio Interamericano');
+  console.log('  Servidor: http://' + HOST + ':' + PORT);
+  console.log('  Dashboard: http://' + HOST + ':' + PORT + '/dashboard/');
 });

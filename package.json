@@ -1,13 +1,14 @@
 {
   "name": "evaluacion-docente-2026",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Sistema de evaluación docente de bachillerato (vanilla JS + Google Apps Script + Google Sheets)",
   "scripts": {
     "dev": "node scripts/serve.js",
-    "build": "node scripts/build.js",
-    "seed": "node scripts/generate-seed.js",
-    "refresh": "node scripts/generate-seed.js && node scripts/build.js"
+    "start": "bun scripts/serve.js",
+    "build": "bun scripts/build.js",
+    "seed": "bun scripts/generate-seed.js",
+    "refresh": "bun scripts/generate-seed.js && bun scripts/build.js"
   },
   "engines": {
     "node": ">=18"
