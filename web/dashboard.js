@@ -664,11 +664,8 @@
     var subjects = teacher && teacher.assignments
       ? Array.from(new Set(teacher.assignments.map(function (a) { return a.subject; }).filter(Boolean))).join(', ')
       : (teacherRows[0] ? teacherRows[0].subject : '');
-    var area = teacher && teacher.assignments
-      ? Array.from(new Set(teacher.assignments.map(function (a) { return a.area; }).filter(Boolean))).join(' · ')
-      : (teacherRows[0] ? teacherRows[0].area : '');
 
-    var subtitle = [subjects, area].filter(Boolean).join(' · ') || 'Docente de bachillerato';
+    var subtitle = subjects || 'Docente de bachillerato';
 
     $('#modalTeacherAvatar').innerHTML = esc(initials(name)) + photoHTML(tObj);
     $('#modalTeacherName').textContent = name;
