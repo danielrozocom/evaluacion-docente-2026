@@ -72,6 +72,12 @@
       .then(function (res) {
         if (!res.ok) throw new Error('El servidor respondió ' + res.status + '.');
         return res.json();
+      })
+      .catch(function (err) {
+        if (err && err.message && (err.message.indexOf('El servidor respondió') !== -1 || err.code === 'DUPLICATE')) {
+          throw err;
+        }
+        throw new Error('No se pudo conectar con el servidor de evaluaciones.');
       });
   }
 
@@ -93,7 +99,7 @@
       if (global.APP_CONFIG) {
         return Promise.resolve({ ok: true, config: config(), mock: MOCK });
       }
-      return jsonp('bootstrap').then(function (res) {
+      return request('bootstrap').then(function (res) {
         if (!res || res.ok === false) throw new Error((res && res.message) || 'Error de configuración.');
         return res;
       });

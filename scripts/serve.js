@@ -26,8 +26,21 @@ const MIME = {
 
 const server = http.createServer((req, res) => {
   let url = decodeURIComponent((req.url || '/').split('?')[0]);
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Accept',
+    });
+    res.end();
+    return;
+  }
+
   if (url === '/health' || url === '/healthz') {
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store',
+    });
     res.end(JSON.stringify({ ok: true }));
     return;
   }
@@ -39,12 +52,17 @@ const server = http.createServer((req, res) => {
       .then(function (out) {
         res.writeHead(out.status >= 200 && out.status < 300 ? 200 : 502, {
           'Content-Type': 'application/json; charset=utf-8',
-          'Cache-Control': 'no-store',
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Access-Control-Allow-Origin': '*',
         });
         res.end(out.body);
       })
       .catch(function () {
-        res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.writeHead(502, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'Access-Control-Allow-Origin': '*',
+        });
         res.end(JSON.stringify({ ok: false, message: 'No se pudo conectar con el backend.' }));
       });
     return;
@@ -67,7 +85,9 @@ const server = http.createServer((req, res) => {
     }
     res.writeHead(200, {
       'Content-Type': MIME[path.extname(file)] || 'application/octet-stream',
-      'Cache-Control': /\.(webp|svg|png|jpg|jpeg|ico)$/i.test(file) ? 'public, max-age=3600' : 'no-cache',
+      'Cache-Control': /\.(webp|svg|png|jpg|jpeg|ico)$/i.test(file)
+        ? 'public, max-age=3600'
+        : 'no-cache, no-store, must-revalidate',
     });
     res.end(req.method === 'HEAD' ? undefined : data);
   });
