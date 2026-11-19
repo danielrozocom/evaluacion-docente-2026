@@ -5,8 +5,32 @@
 (function () {
   'use strict';
 
-  var SS_KEY = 'ed_dash_key';
+  var LS_KEY = 'ed_dash_key';
+  var LS_CACHE = 'ed_dash_cache';
   var COLORS = { yes: '#2f7d5b', no: '#c4553f' };
+
+  function getSavedKey() {
+    try {
+      return localStorage.getItem(LS_KEY) || sessionStorage.getItem(LS_KEY) || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function setSavedKey(key) {
+    try {
+      localStorage.setItem(LS_KEY, key);
+      sessionStorage.setItem(LS_KEY, key);
+    } catch (e) {}
+  }
+
+  function clearSavedKey() {
+    try {
+      localStorage.removeItem(LS_KEY);
+      sessionStorage.removeItem(LS_KEY);
+      localStorage.removeItem(LS_CACHE);
+    } catch (e) {}
+  }
 
   var state = {
     key: '',
@@ -128,6 +152,9 @@
   var isRefreshing = false;
 
   function loadData(key, isSilent) {
+    if (!isSilent && !state.rows.length) {
+      showLoading(true);
+    }
     return Api.getDashboardData(key).then(function (res) {
       if (!res || res.ok === false) throw new Error((res && res.message) || 'No autorizado.');
       state.key = key;
@@ -135,8 +162,18 @@
       state.meta = (res.config && res.config.meta) || {};
       state.rows = (res.rows || []).map(normalizeRow);
       state.mock = !!res.mock;
-      try { sessionStorage.setItem(SS_KEY, key); } catch (e) {}
+      setSavedKey(key);
 
+      // Guardar caché local para que futuras aperturas carguen en 0ms
+      try {
+        localStorage.setItem(LS_CACHE, JSON.stringify({
+          config: res.config,
+          meta: (res.config && res.config.meta) || {},
+          rows: res.rows
+        }));
+      } catch (e) {}
+
+      showLoading(false);
       setupDashboard();
       showDash();
 
@@ -231,12 +268,24 @@
 
   /* ---------------- Acceso ---------------- */
   function showGate(error) {
+    showLoading(false);
     $('#dash').hidden = true;
     $('#gate').hidden = false;
     if (error) $('#gateError').classList.remove('hidden');
+    else $('#gateError').classList.add('hidden');
     icons();
   }
+  function showLoading(show) {
+    var l = $('#gateLoading');
+    if (l) l.hidden = !show;
+    if (show) {
+      $('#gate').hidden = true;
+      $('#dash').hidden = true;
+      icons();
+    }
+  }
   function showDash() {
+    showLoading(false);
     $('#gate').hidden = true;
     $('#dash').hidden = false;
     icons();
@@ -971,7 +1020,7 @@
 
     $('#btnLogout').addEventListener('click', function () {
       stopAutoRefresh();
-      try { sessionStorage.removeItem(SS_KEY); } catch (e) {}
+      clearSavedKey();
       state.key = '';
       showGate(false);
       $('#gateKey').value = '';
@@ -980,10 +1029,30 @@
     $('#btnPrint').addEventListener('click', function () { window.print(); });
     $('#btnCsv').addEventListener('click', exportCsv);
 
-    var savedKey = '';
-    try { savedKey = sessionStorage.getItem(SS_KEY) || ''; } catch (e) {}
-    if (savedKey) loadData(savedKey).catch(function () { showGate(false); });
-    else showGate(false);
+    var savedKey = getSavedKey();
+    if (savedKey) {
+      // 1. Cargar instantáneamente (0ms) desde caché local si existe
+      var cached = null;
+      try { cached = JSON.parse(localStorage.getItem(LS_CACHE) || 'null'); } catch (e) {}
+      if (cached && cached.config && cached.rows) {
+        state.key = savedKey;
+        state.config = cached.config;
+        state.meta = cached.meta || {};
+        state.rows = (cached.rows || []).map(normalizeRow);
+        setupDashboard();
+        showDash();
+      } else {
+        showLoading(true);
+      }
+
+      // 2. Traer en segundo plano los datos actualizados del servidor
+      loadData(savedKey, true).catch(function () {
+        clearSavedKey();
+        showGate(true);
+      });
+    } else {
+      showGate(false);
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet" />
 <link rel="icon" type="image/svg+xml" href="../assets/logo.svg" />
-<link rel="stylesheet" href="../styles.css?v=1.1.8" />
+<link rel="stylesheet" href="../styles.css?v=1.1.9" />
 </head>
 <body>
 
@@ -37,6 +37,14 @@
       </button>
     </form>
     <p class="hint text-center mt-4"><a id="backLink" href="../index.html"><i data-lucide="arrow-left" style="width:12px;height:12px;vertical-align:-2px;"></i> Volver a la evaluación</a></p>
+  </div>
+</div>
+
+<div class="gate" id="gateLoading" hidden>
+  <div class="card gate-card text-center" style="display:flex;flex-direction:column;align-items:center;padding:36px 24px;gap:14px;">
+    <div class="gate-icon" style="animation:spin 1s linear infinite;"><i data-lucide="loader-2"></i></div>
+    <h2 style="font-size:20px;">Cargando dashboard...</h2>
+    <p class="muted" style="font-size:13.5px;">Recuperando resultados más recientes</p>
   </div>
 </div>
 
@@ -264,9 +272,9 @@
 </div>
 
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-<script src="../config.js?v=1.1.8"></script>
-<script src="../api.js?v=1.1.8"></script>
-<script src="../dashboard.js?v=1.1.8"></script>
+<script src="../config.js?v=1.1.9"></script>
+<script src="../api.js?v=1.1.9"></script>
+<script src="../dashboard.js?v=1.1.9"></script>
 </body>
 </html>
 
