@@ -1,6 +1,6 @@
 {
   "name": "evaluacion-docente-2026",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "private": true,
   "description": "Sistema de evaluación docente de bachillerato (vanilla JS + Google Apps Script + Google Sheets)",
   "scripts": {

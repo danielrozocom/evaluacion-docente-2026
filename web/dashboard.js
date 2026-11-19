@@ -151,10 +151,7 @@
   var autoRefreshEnabled = true;
   var isRefreshing = false;
 
-  function loadData(key, isSilent) {
-    if (!isSilent && !state.rows.length) {
-      showLoading(true);
-    }
+  function loadData(key) {
     return Api.getDashboardData(key).then(function (res) {
       if (!res || res.ok === false) throw new Error((res && res.message) || 'No autorizado.');
       state.key = key;
@@ -186,6 +183,9 @@
       if (!autoTimer && autoRefreshEnabled) {
         startAutoRefresh();
       }
+    }).catch(function (err) {
+      showLoading(false);
+      throw err;
     });
   }
 
@@ -979,13 +979,36 @@
       });
     }
 
-    $('#gateForm').addEventListener('submit', function (e) {      e.preventDefault();
+    $('#gateForm').addEventListener('submit', function (e) {
+      e.preventDefault();
       var key = $('#gateKey').value.trim();
-      if (!key) { $('#gateError').classList.remove('hidden'); return; }
-      $('#gateBtn').disabled = true;
-      loadData(key).catch(function () {
-        $('#gateError').classList.remove('hidden');
-        $('#gateBtn').disabled = false;
+      var errorEl = $('#gateError');
+      var btn = $('#gateBtn');
+
+      if (!key) {
+        showGate(true);
+        if (errorEl) {
+          errorEl.querySelector('div').textContent = 'Ingresa la clave de acceso.';
+          errorEl.classList.remove('hidden');
+        }
+        $('#gateKey').focus();
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="is-spinning" style="display:inline-flex;align-items:center;animation:spin 1s linear infinite;margin-right:6px;"><i data-lucide="loader-2"></i></span><span>Verificando clave...</span>';
+      icons();
+      if (errorEl) errorEl.classList.add('hidden');
+
+      loadData(key).catch(function (err) {
+        showGate(true);
+        if (errorEl) {
+          errorEl.querySelector('div').textContent = (err && err.message) || 'Clave incorrecta. Inténtalo de nuevo.';
+          errorEl.classList.remove('hidden');
+        }
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="log-in"></i><span>Entrar al dashboard</span>';
+        icons();
         $('#gateKey').select();
       });
     });
