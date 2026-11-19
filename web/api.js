@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    Capa de datos del frontend
    - Producción: backend en Google Apps Script vía JSONP.
      (El sitio es estático y vive fuera de Apps Script.)

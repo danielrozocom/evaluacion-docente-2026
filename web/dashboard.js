@@ -26,6 +26,20 @@
   function icons() { if (window.lucide) window.lucide.createIcons(); }
   function fmtPct(n) { return Number(n).toFixed(1).replace('.', ',') + '%'; }
   function pct(part, total) { return total ? Math.round((part / total) * 100) : 0; }
+  function initials(name) {
+    var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  function photoHTML(t) {
+    if (!t || !t.photo) return '';
+    var src = (t.photo.startsWith('http') || t.photo.startsWith('/')) ? t.photo : ('../' + t.photo);
+    return '<img src="' + esc(src) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()" />';
+  }
+  function avatarHTML(t, cls) {
+    return '<span class="avatar ' + (cls || '') + '">' + esc(initials(t ? t.name : '')) + photoHTML(t) + '</span>';
+  }
 
   function toast(msg, type) {
     var t = document.createElement('div');
@@ -135,7 +149,52 @@
     }).join('');
 
     bindFilters();
+    bindInteractions();
     renderAll();
+  }
+
+  function bindInteractions() {
+    if (state.interactionsBound) return;
+    state.interactionsBound = true;
+
+    var tbody = $('#tableTeachers tbody');
+    if (tbody) {
+      tbody.addEventListener('click', function (e) {
+        var row = e.target.closest('[data-teacher-id]');
+        if (row) {
+          var id = row.getAttribute('data-teacher-id');
+          if (id) openTeacherDetail(id);
+        }
+      });
+    }
+
+    var chart = $('#chartTeachers');
+    if (chart) {
+      chart.addEventListener('click', function (e) {
+        var row = e.target.closest('[data-teacher-id]');
+        if (row) {
+          var id = row.getAttribute('data-teacher-id');
+          if (id) openTeacherDetail(id);
+        }
+      });
+    }
+
+    var closeBtn = $('#modalCloseBtn');
+    if (closeBtn) closeBtn.addEventListener('click', closeTeacherDetail);
+
+    var closeBottom = $('#modalCloseBottomBtn');
+    if (closeBottom) closeBottom.addEventListener('click', closeTeacherDetail);
+
+    var modal = $('#modalTeacherDetail');
+    if (modal) {
+      modal.addEventListener('click', function (e) {
+        if (e.target.id === 'modalTeacherDetail') closeTeacherDetail();
+      });
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeTeacherDetail();
+    });
   }
 
   function bindFilters() {
@@ -332,7 +391,11 @@
     }
     $('#chartTeachers').innerHTML = s.byTeacher.map(function (t) {
       var low = minN && t.n < minN;
-      return barRow(t.name, t.avg, low ? ' <span class="badge badge-warning" style="margin-left:4px;">preliminar</span>' : '');
+      var w = Math.min(100, Math.max(0, t.avg)).toFixed(1);
+      return '<div class="bar-row is-clickable" data-teacher-id="' + esc(t.id) + '" title="Clic para ver detalle de ' + esc(t.name) + '">' +
+        '<span class="bar-name">' + esc(t.name) + (low ? ' <span class="badge badge-warning" style="margin-left:4px;">preliminar</span>' : '') + '</span>' +
+        '<span class="bar-track"><span class="bar-fill" style="width:' + w + '%"></span></span>' +
+        '<span class="bar-value">' + fmtPct(t.avg) + '</span></div>';
     }).join('');
   }
 
@@ -423,24 +486,243 @@
     var minN = (state.config.settings && state.config.settings.minResponsesForDisplay) || 0;
     var tbody = $('#tableTeachers tbody');
     $('#tableSub').textContent = s.byTeacher.length + (s.byTeacher.length === 1 ? ' docente' : ' docentes') +
-      ' · ' + s.total + (s.total === 1 ? ' evaluación' : ' evaluaciones');
+      ' · ' + s.total + (s.total === 1 ? ' evaluación' : ' evaluaciones') + ' · Clic en un docente para ver el detalle';
     $('#tableCount').textContent = s.total + ' registros';
 
     if (!s.byTeacher.length) {
-      tbody.innerHTML = '<tr><td colspan="5"><div class="empty">No hay evaluaciones con estos filtros.</div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6"><div class="empty">No hay evaluaciones con estos filtros.</div></td></tr>';
       return;
     }
 
     tbody.innerHTML = s.byTeacher.map(function (t) {
       var lv = level(t.avg, t.n);
-      return '<tr>' +
-        '<td><div class="cell-strong">' + esc(t.name) + '</div></td>' +
+      var teacher = (state.config.teachers || []).filter(function (x) { return x.id === t.id; })[0];
+      var subjects = teacher && teacher.assignments
+        ? Array.from(new Set(teacher.assignments.map(function (a) { return a.subject; }).filter(Boolean))).slice(0, 2).join(', ')
+        : '';
+
+      return '<tr class="is-clickable" data-teacher-id="' + esc(t.id) + '" title="Clic para ver detalle de ' + esc(t.name) + '">' +
+        '<td>' +
+          '<div style="display:flex;align-items:center;gap:10px;">' +
+            avatarHTML(teacher || { name: t.name, photo: '' }) +
+            '<div>' +
+              '<div class="cell-strong">' + esc(t.name) + '</div>' +
+              (subjects ? '<div class="small muted" style="font-size:11px;">' + esc(subjects) + '</div>' : '') +
+            '</div>' +
+          '</div>' +
+        '</td>' +
         '<td>' + t.grades.map(function (g) { return '<span class="chip">' + esc(g) + '</span>'; }).join(' ') + '</td>' +
         '<td class="text-right">' + t.n + (minN && t.n < minN ? ' <span class="badge badge-warning">bajo</span>' : '') + '</td>' +
         '<td class="text-right"><span class="num-tag ' + lv.tag + '">' + fmtPct(t.avg) + '</span></td>' +
         '<td class="text-right"><span class="badge ' + lv.cls + '">' + lv.text + '</span></td>' +
+        '<td class="text-right">' +
+          '<button class="btn btn-outline btn-sm" type="button" data-teacher-id="' + esc(t.id) + '" style="padding:0 9px;height:28px;min-height:28px;font-size:11.5px;gap:4px;">' +
+            '<i data-lucide="eye" style="width:13px;height:13px;"></i><span>Detalle</span>' +
+          '</button>' +
+        '</td>' +
       '</tr>';
     }).join('');
+    icons();
+  }
+
+  /* ---------------- Modal de Detalle por Docente ---------------- */
+  function openTeacherDetail(teacherId) {
+    var teacher = (state.config.teachers || []).filter(function (t) { return t.id === teacherId; })[0];
+    var teacherRows = state.filtered.filter(function (r) { return r.teacherId === teacherId; });
+
+    if (!teacherRows.length) {
+      teacherRows = state.rows.filter(function (r) { return r.teacherId === teacherId; });
+    }
+
+    var name = (teacher && teacher.name) || (teacherRows[0] && teacherRows[0].teacherName) || 'Docente';
+    var tObj = teacher || { name: name, photo: '' };
+
+    var subjects = teacher && teacher.assignments
+      ? Array.from(new Set(teacher.assignments.map(function (a) { return a.subject; }).filter(Boolean))).join(', ')
+      : (teacherRows[0] ? teacherRows[0].subject : '');
+    var area = teacher && teacher.assignments
+      ? Array.from(new Set(teacher.assignments.map(function (a) { return a.area; }).filter(Boolean))).join(' · ')
+      : (teacherRows[0] ? teacherRows[0].area : '');
+
+    var subtitle = [subjects, area].filter(Boolean).join(' · ') || 'Docente de bachillerato';
+
+    $('#modalTeacherAvatar').innerHTML = esc(initials(name)) + photoHTML(tObj);
+    $('#modalTeacherName').textContent = name;
+    $('#modalTeacherSubjects').textContent = subtitle;
+
+    if (!teacherRows.length) {
+      $('#modalTeacherKpis').innerHTML =
+        '<div class="kpi"><div class="kpi-label">Evaluaciones</div><div class="kpi-value">0</div><div class="kpi-sub">Sin respuestas</div></div>' +
+        '<div class="kpi"><div class="kpi-label">Favorabilidad</div><div class="kpi-value">—</div><div class="kpi-sub"><span class="badge">Sin datos</span></div></div>';
+      $('#modalTeacherBreakdown').innerHTML = '<div class="card card-pad" style="grid-column:1/-1;"><div class="empty">Este docente aún no tiene evaluaciones registradas.</div></div>';
+      $('#modalTeacherResources').innerHTML = '<div class="empty">Sin datos de recursos.</div>';
+      $('#modalTeacherQuestions').innerHTML = '<div class="empty">No hay preguntas respondidas aún para este docente.</div>';
+      $('#modalCommentsCount').textContent = '0 comentarios';
+      $('#modalTeacherComments').innerHTML = '<div class="empty">No hay comentarios aún.</div>';
+      $('#modalTeacherDetail').hidden = false;
+      document.body.style.overflow = 'hidden';
+      icons();
+      return;
+    }
+
+    var vals = [];
+    teacherRows.forEach(function (r) {
+      Object.keys(r.answers).forEach(function (k) { vals.push(r.answers[k]); });
+    });
+    var yes = vals.filter(function (v) { return v === 1; }).length;
+    var no = vals.length - yes;
+    var avg = vals.length ? (yes / vals.length) * 100 : 0;
+    var lv = level(avg, teacherRows.length);
+
+    var comments = teacherRows
+      .map(function (r) { return { text: (r.comment || '').trim(), grade: r.grade, timestamp: r.timestamp }; })
+      .filter(function (c) { return c.text.length > 0; });
+
+    // 1. KPIs
+    $('#modalTeacherKpis').innerHTML =
+      '<div class="kpi">' +
+        '<div class="kpi-label">Evaluaciones</div>' +
+        '<div class="kpi-value">' + teacherRows.length + '</div>' +
+        '<div class="kpi-sub">Estudiantes evaluaron</div>' +
+      '</div>' +
+      '<div class="kpi">' +
+        '<div class="kpi-label">Favorabilidad</div>' +
+        '<div class="kpi-value ' + lv.tag + '">' + fmtPct(avg) + '</div>' +
+        '<div class="kpi-sub"><span class="badge ' + lv.cls + '">' + lv.text + '</span></div>' +
+      '</div>' +
+      '<div class="kpi">' +
+        '<div class="kpi-label">Respuestas Sí / No</div>' +
+        '<div class="kpi-value" style="font-size:22px;">' + yes + ' <span class="small muted">/ ' + no + '</span></div>' +
+        '<div class="kpi-sub">' + fmtPct(vals.length ? (yes / vals.length) * 100 : 0) + ' respuestas Sí</div>' +
+      '</div>' +
+      '<div class="kpi">' +
+        '<div class="kpi-label">Comentarios</div>' +
+        '<div class="kpi-value">' + comments.length + '</div>' +
+        '<div class="kpi-sub">' + (comments.length === 1 ? 'Opinión escrita' : 'Opiniones escritas') + '</div>' +
+      '</div>';
+
+    // 2. Desglose por dimensiones y por grados
+    var dimHtml = (state.config.dimensions || []).map(function (d) {
+      var dVals = [];
+      teacherRows.forEach(function (r) {
+        Object.keys(r.answers).forEach(function (k) {
+          var q = questionOf(k);
+          if (q && q.dimension === d.id) dVals.push(r.answers[k]);
+        });
+      });
+      var dYes = dVals.filter(function (v) { return v === 1; }).length;
+      var dAvg = dVals.length ? (dYes / dVals.length) * 100 : 0;
+      var dLv = level(dAvg, teacherRows.length);
+      return '<div style="margin-bottom:10px;">' +
+        '<div class="row-between small" style="margin-bottom:4px;">' +
+          '<span class="fw-bold">' + esc(d.name) + '</span>' +
+          '<span class="num-tag ' + dLv.tag + '" style="font-size:11px;height:20px;">' + fmtPct(dAvg) + '</span>' +
+        '</div>' +
+        '<div class="bar-track" style="height:6px;"><span class="bar-fill ' + dLv.tag + '" style="width:' + dAvg.toFixed(1) + '%"></span></div>' +
+      '</div>';
+    }).join('');
+
+    var gradesSet = Array.from(new Set(teacherRows.map(function (r) { return r.grade; }).filter(Boolean)));
+    var gradeHtml = gradesSet.map(function (gName) {
+      var gRows = teacherRows.filter(function (r) { return r.grade === gName; });
+      var gVals = [];
+      gRows.forEach(function (r) { Object.keys(r.answers).forEach(function (k) { gVals.push(r.answers[k]); }); });
+      var gYes = gVals.filter(function (v) { return v === 1; }).length;
+      var gAvg = gVals.length ? (gYes / gVals.length) * 100 : 0;
+      var gLv = level(gAvg, gRows.length);
+      return '<div class="row-between" style="padding:6px 0;border-bottom:1px solid #f1f3f9;">' +
+        '<div><span class="chip">' + esc(gName) + '</span> <span class="small muted">(' + gRows.length + ' eval.)</span></div>' +
+        '<span class="num-tag ' + gLv.tag + '" style="font-size:11px;height:20px;">' + fmtPct(gAvg) + '</span>' +
+      '</div>';
+    }).join('');
+
+    $('#modalTeacherBreakdown').innerHTML =
+      '<div class="card card-pad">' +
+        '<div class="chart-title">Favorabilidad por dimensión</div>' +
+        '<div class="chart-sub" style="margin-bottom:12px;">Desempeño según dimensiones</div>' +
+        dimHtml +
+      '</div>' +
+      '<div class="card card-pad">' +
+        '<div class="chart-title">Evaluaciones por grado</div>' +
+        '<div class="chart-sub" style="margin-bottom:12px;">Resultados por cada grado</div>' +
+        (gradeHtml || '<div class="empty">Sin desglose de grados</div>') +
+      '</div>';
+
+    // 3. Recursos de aula
+    var resOpts = (state.config.resources && state.config.resources.options) || [];
+    var totalTeacherEvals = teacherRows.length || 1;
+    var resHtml = resOpts.map(function (opt) {
+      var count = teacherRows.filter(function (r) {
+        return (r.resources || []).some(function (res) {
+          var s = String(res || '').toLowerCase();
+          return s === opt.id.toLowerCase() || s === opt.label.toLowerCase();
+        });
+      }).length;
+      var p = (count / totalTeacherEvals) * 100;
+      return '<div class="bar-row">' +
+        '<div class="bar-name" title="' + esc(opt.label) + '">' + esc(opt.label) + '</div>' +
+        '<div class="bar-track"><span class="bar-fill" style="width:' + p.toFixed(1) + '%"></span></div>' +
+        '<div class="bar-value" style="font-size:11.5px;">' + count + ' <small class="muted">(' + Math.round(p) + '%)</small></div>' +
+      '</div>';
+    }).join('');
+    $('#modalTeacherResources').innerHTML = resHtml || '<div class="empty">No hay datos de recursos.</div>';
+
+    // 4. Preguntas (q1 a q20)
+    var qs = state.config.questions || [];
+    var questionsHtml = qs.map(function (q, idx) {
+      var qYes = teacherRows.filter(function (r) { return r.answers[q.id] === 1; }).length;
+      var qNo = teacherRows.filter(function (r) { return r.answers[q.id] === 0; }).length;
+      var qTotal = qYes + qNo;
+      var qPct = qTotal ? (qYes / qTotal) * 100 : 0;
+      var qLv = level(qPct, qTotal);
+      var dim = (state.config.dimensions || []).filter(function (d) { return d.id === q.dimension; })[0];
+      var dimName = dim ? dim.name : q.dimension;
+
+      return '<div style="padding:10px 0;border-bottom:1px solid #eef1f7;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px;">' +
+          '<div style="font-size:13px;line-height:1.45;flex:1;">' +
+            '<span class="badge" style="margin-right:6px;font-size:10px;vertical-align:1px;">P' + (idx + 1) + '</span>' +
+            esc(q.text) +
+          '</div>' +
+          '<div style="text-align:right;white-space:nowrap;">' +
+            '<span class="num-tag ' + qLv.tag + '">' + fmtPct(qPct) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="bar-track" style="height:7px;"><span class="bar-fill ' + qLv.tag + '" style="width:' + qPct.toFixed(1) + '%"></span></div>' +
+        '<div class="row-between small muted" style="font-size:11px;margin-top:4px;">' +
+          '<span>Dimensión: ' + esc(dimName) + '</span>' +
+          '<span><strong>' + qYes + ' Sí</strong> (' + fmtPct(qPct) + ') · <strong>' + qNo + ' No</strong></span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    $('#modalTeacherQuestions').innerHTML = questionsHtml;
+
+    // 5. Comentarios
+    $('#modalCommentsCount').textContent = comments.length + (comments.length === 1 ? ' comentario' : ' comentarios');
+    if (!comments.length) {
+      $('#modalTeacherComments').innerHTML = '<div class="empty">No se registraron comentarios de texto para este docente.</div>';
+    } else {
+      $('#modalTeacherComments').innerHTML = comments.map(function (c) {
+        var dStr = c.timestamp ? new Date(c.timestamp).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+        return '<div class="comment-card">' +
+          '<div class="comment-text">“' + esc(c.text) + '”</div>' +
+          '<div class="row-between small muted" style="font-size:11px;">' +
+            '<span>' + (c.grade ? ('Grado ' + esc(c.grade)) : 'Estudiante anónimo') + '</span>' +
+            '<span>' + esc(dStr) + '</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    $('#modalTeacherDetail').hidden = false;
+    document.body.style.overflow = 'hidden';
+    icons();
+  }
+
+  function closeTeacherDetail() {
+    var m = $('#modalTeacherDetail');
+    if (m) m.hidden = true;
+    document.body.style.overflow = '';
   }
 
   /* ---------------- CSV ---------------- */

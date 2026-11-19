@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet" />
 <link rel="icon" type="image/svg+xml" href="../assets/logo.svg" />
-<link rel="stylesheet" href="../styles.css?v=1.1.1" />
+<link rel="stylesheet" href="../styles.css?v=1.1.2" />
 </head>
 <body>
 
@@ -181,6 +181,7 @@
                 <th class="text-right">Evaluaciones</th>
                 <th class="text-right">Favorabilidad</th>
                 <th class="text-right">Nivel</th>
+                <th class="text-right" style="width: 95px;">Acción</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -205,10 +206,62 @@
 
 <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
 
+<div class="modal-backdrop" id="modalTeacherDetail" hidden>
+  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="modalTeacherName">
+    <div class="modal-header-custom">
+      <div style="display:flex;align-items:center;gap:14px;min-width:0;">
+        <span class="avatar lg" id="modalTeacherAvatar">—</span>
+        <div style="min-width:0;">
+          <div class="eyebrow" id="modalTeacherEyebrow">Detalle del docente</div>
+          <h2 id="modalTeacherName" style="font-size:20px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</h2>
+          <div class="small muted" id="modalTeacherSubjects" style="margin-top:2px;">—</div>
+        </div>
+      </div>
+      <button class="modal-close-btn" id="modalCloseBtn" type="button" aria-label="Cerrar modal" title="Cerrar">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+    <!-- KPIs del docente -->
+    <div class="kpi-grid" id="modalTeacherKpis"></div>
+
+    <!-- Desglose por dimensiones y por grado -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:14px;" id="modalTeacherBreakdown"></div>
+
+    <!-- Recursos de aula -->
+    <div class="card card-pad">
+      <div class="chart-title">Recursos de aula utilizados</div>
+      <div class="chart-sub">Menciones de recursos según los estudiantes de este docente</div>
+      <div class="bars mt-3" id="modalTeacherResources"></div>
+    </div>
+
+    <!-- Preguntas detalladas -->
+    <div class="card card-pad">
+      <div class="chart-title">Resultados por pregunta</div>
+      <div class="chart-sub">Respuestas Sí / No para cada uno de los 20 aspectos evaluados</div>
+      <div class="stack mt-3" id="modalTeacherQuestions"></div>
+    </div>
+
+    <!-- Comentarios -->
+    <div class="card card-pad">
+      <div class="row-between">
+        <div class="chart-title">Comentarios de estudiantes</div>
+        <span class="badge badge-outline" id="modalCommentsCount">0 comentarios</span>
+      </div>
+      <div class="chart-sub">Comentarios anónimos registrados para este docente</div>
+      <div class="stack mt-3" id="modalTeacherComments"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="modalCloseBottomBtn" type="button">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-<script src="../config.js?v=1.1.1"></script>
-<script src="../api.js?v=1.1.1"></script>
-<script src="../dashboard.js?v=1.1.1"></script>
+<script src="../config.js?v=1.1.2"></script>
+<script src="../api.js?v=1.1.2"></script>
+<script src="../dashboard.js?v=1.1.2"></script>
 </body>
 </html>
 

@@ -384,6 +384,66 @@ img, svg { max-width: 100%; }
   display: grid; gap: 12px;
   animation: modal-in 180ms ease;
 }
+.modal-lg {
+  width: min(860px, calc(100vw - 32px));
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  gap: 16px;
+  padding: 20px;
+}
+.modal-header-custom {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--muted-foreground);
+  padding: 6px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  transition: background 150ms ease, color 150ms ease;
+  flex-shrink: 0;
+}
+.modal-close-btn:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+.modal-close-btn svg { width: 20px; height: 20px; }
+table.data tbody tr.is-clickable,
+.bar-row.is-clickable {
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+table.data tbody tr.is-clickable:hover {
+  background: #f0f4fd !important;
+}
+.bar-row.is-clickable:hover {
+  background: #f0f4fd;
+  border-radius: 6px;
+}
+.comment-card {
+  background: #f8f9fc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 6px;
+}
+.comment-text {
+  font-size: 13.5px;
+  color: var(--foreground);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.fw-bold { font-weight: 700; }
 .modal-icon {
   width: 44px; height: 44px; border-radius: 12px;
   background: var(--warning-soft); color: var(--warning);
