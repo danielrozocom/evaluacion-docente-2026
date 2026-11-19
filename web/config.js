@@ -1722,4 +1722,4 @@ window.APP_CONFIG = {
     ]
   }
 };
-window.APP_API_URL = "";
+window.APP_API_URL = "https://script.google.com/macros/s/AKfycbw38XFOFOPFHn92md0TPlfAZc-aPU3LAOz0tP2Jh1LhkvQqa2_4DXdXa6I0e35x4aR3Vg/exec";

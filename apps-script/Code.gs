@@ -289,6 +289,15 @@ function checkDashboardKey_(key) {
    INSTALACIÓN
    ------------------------------------------------------------ */
 function setup() {
+  const message = setupCore_();
+  try {
+    SpreadsheetApp.getUi().alert(message);
+  } catch (err) {
+    Logger.log(message);
+  }
+}
+
+function setupCore_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   if (!ss) throw new Error('Abre este script desde una hoja de cálculo (Extensiones → Apps Script).');
 
@@ -301,14 +310,18 @@ function setup() {
 
   const key = props.getProperty(PROP_DASHBOARD_KEY);
   const url = getWebAppUrl_();
-  SpreadsheetApp.getUi().alert(
-    'Backend configurado ✅\n\n' +
+  return 'Backend configurado ✅\n\n' +
     'Hoja de respuestas: "' + sh.getName() + '"\n' +
     'Clave del dashboard: ' + key + '\n' +
     (url ? 'URL del backend: ' + url + '\n' : '') +
     '\nRecuerda publicar el Web App (Implementar → Nueva implementación → Aplicación web, acceso "Cualquier persona").\n' +
-    'Esa URL se configura en site.json del sitio web: apiUrl.'
-  );
+    'Esa URL se configura en site.json del sitio web: apiUrl.';
+}
+
+function setDashboardKey() {
+  PropertiesService.getScriptProperties().setProperty(PROP_DASHBOARD_KEY, DEFAULT_DASHBOARD_KEY);
+  Logger.log('Clave del dashboard actualizada.');
+  return DEFAULT_DASHBOARD_KEY;
 }
 
 function onOpen() {

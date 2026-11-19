@@ -10,7 +10,6 @@
   var API_URL = String(global.APP_API_URL || '').trim();
   var MOCK = !API_URL;
   var MOCK_KEY = 'ed_mock_responses_v1';
-  var MOCK_DASH_KEY = 'demo2026';
   var TIMEOUT = 30000;
 
   function config() {
@@ -143,8 +142,8 @@
       if (!MOCK) return jsonp('dashboard', { key: key });
 
       return sleep(320).then(function () {
-        if (String(key || '').trim() !== MOCK_DASH_KEY) {
-          var e = new Error('Clave incorrecta.');
+        if (!String(key || '').trim()) {
+          var e = new Error('Ingresa la clave del dashboard.');
           e.code = 'UNAUTHORIZED';
           throw e;
         }

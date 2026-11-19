@@ -480,13 +480,13 @@
 
     if (Api.isMock) {
       var gate = $('#gateForm');
-      if (gate && !document.getElementById('mockHint')) {
-        var p = document.createElement('p');
-        p.id = 'mockHint';
-        p.className = 'hint text-center';
-        p.style.marginTop = '10px';
-        p.innerHTML = 'Modo local: la clave de prueba es <strong>demo2026</strong>.';
-        gate.appendChild(p);
+      if (gate && !document.getElementById('mockNote')) {
+        var note = document.createElement('p');
+        note.id = 'mockNote';
+        note.className = 'hint text-center';
+        note.style.marginTop = '10px';
+        note.textContent = 'Modo local de prueba: escribe cualquier clave para ver el dashboard.';
+        gate.appendChild(note);
       }
     }
 

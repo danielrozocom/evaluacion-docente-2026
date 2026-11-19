@@ -52,7 +52,7 @@ npm run dev
 
 - App: http://localhost:5173
 - Dashboard: http://localhost:5173/dashboard/
-- Clave demo: **`demo2026`** (los datos se guardan en `localStorage`)
+- En local cualquier clave no vacía abre el dashboard (los datos se guardan en `localStorage`).
 
 No requiere conexión con Google. Es solo para validar diseño y flujo en celular.
 
