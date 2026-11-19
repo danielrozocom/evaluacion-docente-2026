@@ -396,10 +396,30 @@
       };
     });
 
-    var activeGrades = new Set(rows.map(function (r) { return r.gradeId; }));
-    var expected = (state.config.grades || [])
-      .filter(function (g) { return activeGrades.has(g.id); })
-      .reduce(function (a, g) { return a + (Number(g.students) || 0); }, 0);
+    // Total de matrícula esperada según filtros aplicados (sin truncar por grados que ya respondieron)
+    var expected = 0;
+    if (state.filters.teacher) {
+      var tObj = (state.config.teachers || []).filter(function (t) { return t.id === state.filters.teacher; })[0];
+      if (tObj && tObj.assignments) {
+        var relAssigns = tObj.assignments;
+        if (state.filters.grade) {
+          relAssigns = relAssigns.filter(function (a) { return a.gradeId === state.filters.grade; });
+        }
+        var teacherCourses = new Set(relAssigns.map(function (a) { return a.course; }));
+        var studentsSum = 0;
+        (state.config.grades || []).forEach(function (g) {
+          (g.courseStudents || []).forEach(function (cs) {
+            if (teacherCourses.has(cs.course)) studentsSum += (Number(cs.students) || 0);
+          });
+        });
+        expected = studentsSum;
+      }
+    } else if (state.filters.grade) {
+      var gObj = (state.config.grades || []).filter(function (g) { return g.id === state.filters.grade; })[0];
+      expected = gObj ? (Number(gObj.students) || 0) : 0;
+    } else {
+      expected = (state.config.grades || []).reduce(function (a, g) { return a + (Number(g.students) || 0); }, 0);
+    }
 
     var byQuestion = (state.config.questions || []).map(function (q) {
       var vals = [];
