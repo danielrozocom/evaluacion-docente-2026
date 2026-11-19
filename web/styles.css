@@ -1292,6 +1292,10 @@ svg {
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
+.modal-backdrop[hidden],
+.modal-backdrop.hidden {
+  display: none !important;
+}
 
 .modal {
   width: min(440px, 100%);
@@ -2115,11 +2119,15 @@ table.data tbody tr.is-clickable:hover {
 
 /* Modal en Móvil: con márgenes laterales y respiro visual */
 @media (max-width: 639px) {
-  .modal-backdrop {
-    padding: 16px 12px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+  .modal-backdrop:not([hidden]) {
+    padding: 16px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-backdrop[hidden],
+  .modal-backdrop.hidden {
+    display: none !important;
   }
 
   .modal-lg {
